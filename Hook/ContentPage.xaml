@@ -1,0 +1,26 @@
+﻿<Page
+    x:Class="Hook.ContentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Hook"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid x:Name="ConvertingLayout">
+            <Frame Background="Black" Opacity="0.3"/>
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="ConvertHeader" Style="{ThemeResource HeaderTextBlockStyle}" Grid.Row="0" HorizontalAlignment="Center"/>
+                <muxc:ProgressBar IsIndeterminate="True" Grid.Row="1" Width="600"/>
+            </Grid>
+        </Grid>
+        <muxc:WebView2 x:Name="WebView"/>
+    </Grid>
+</Page>

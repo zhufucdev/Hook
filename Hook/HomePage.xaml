@@ -1,0 +1,18 @@
+﻿<Page
+    x:Class="Hook.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Hook"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    AllowDrop="True"
+    Drop="Page_Drop"
+    DragOver="Page_DragOver">
+
+    <StackPanel Padding="20 0 20 0" Orientation="Vertical" Spacing="10">
+        <TextBlock x:Uid="HomeHeader" Style="{ThemeResource HeaderTextBlockStyle}" Text="What do you want to do?"/>
+        <ListView x:Name="RecentList"/>
+    </StackPanel>
+</Page>
