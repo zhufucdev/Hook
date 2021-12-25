@@ -37,13 +37,34 @@ namespace Hook
         private async void OpenDocument(DocumentInfo doc)
         {
             await Task.Run(async () => {
-                var path = await doc.BuildCache();
-                await Dispatcher.RunAsync(
-                    Windows.UI.Core.CoreDispatcherPriority.High,
-                    () => {
-                        WebView.Source = new Uri("file://" + path.Path);
-                        ConvertingLayout.Visibility = Visibility.Collapsed;
+                Windows.Storage.StorageFile file;
+                try
+                {
+                    file = await doc.BuildCache();
+                }
+                catch (Exception ex)
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () => {
+                        Prograss.ShowError = true;
+                        var dialog = new ContentDialog()
+                        {
+                            Title = Utility.GetResourceString("ErrorOpen/Title"),
+                            Content = ex.Message,
+                            CloseButtonText = Utility.GetResourceString("CloseButton/Text")
+                        };
+                        dialog.CloseButtonClick += (sender, args) => MainPage.Instance.CloseDocument(doc);
+                        await dialog.ShowAsync();
                     });
+                    return;
+                }
+                await Dispatcher.RunAsync(
+                        Windows.UI.Core.CoreDispatcherPriority.High,
+                        () =>
+                        {
+                            WebView.Source = new Uri("file://" + file.Path);
+                            ConvertingLayout.Visibility = Visibility.Collapsed;
+                        }
+                );
             });
         }
     }

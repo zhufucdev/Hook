@@ -18,7 +18,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBlock x:Uid="ConvertHeader" Style="{ThemeResource HeaderTextBlockStyle}" Grid.Row="0" HorizontalAlignment="Center"/>
-                <muxc:ProgressBar IsIndeterminate="True" Grid.Row="1" Width="600"/>
+                <muxc:ProgressBar IsIndeterminate="True" Grid.Row="1" Width="600" x:Name="Prograss"/>
             </Grid>
         </Grid>
         <muxc:WebView2 x:Name="WebView"/>

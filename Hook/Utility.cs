@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.AccessCache;
 
 namespace Hook
 {
@@ -15,5 +17,7 @@ namespace Hook
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
             return resourceLoader.GetString(code);
         }
+
+        public static DocumentConvert Converter;
     }
 }

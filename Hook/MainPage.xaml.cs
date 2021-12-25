@@ -31,6 +31,7 @@ namespace Hook
             AddHomeScreen();
 
             Instance = this;
+            LoadSettings();
         }
 
         private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
@@ -54,9 +55,14 @@ namespace Hook
             AddHomeScreen();
         }
 
-        private async void TabView_TabCloseRequested(muxc.TabView sender, muxc.TabViewTabCloseRequestedEventArgs args)
+        private void TabView_TabCloseRequested(muxc.TabView sender, muxc.TabViewTabCloseRequestedEventArgs args)
         {
-            if (sender.TabItems.Count == 1)
+            CloseTab(args.Item);
+        }
+
+        private async void CloseTab(object item)
+        {
+            if (TabView.TabItems.Count == 1)
             {
                 // last item remaining:
                 //  close the app
@@ -65,7 +71,7 @@ namespace Hook
             else
             {
                 // remove the given item by args
-                sender.TabItems.Remove(args.Item);
+                TabView.TabItems.Remove(item);
             }
         }
 
@@ -82,6 +88,18 @@ namespace Hook
             frame.Navigate(typeof(HomePage));
 
             TabView.TabItems.Add(newTab);
+        }
+
+        public void CloseDocument(DocumentInfo doc)
+        {
+            foreach (muxc.TabViewItem item in TabView.TabItems)
+            {
+                if (item.Tag?.ToString() == doc.Path)
+                {
+                    CloseTab(item);
+                    break;
+                }
+            }
         }
 
         public void OpenDocument(DocumentInfo doc)
@@ -105,6 +123,11 @@ namespace Hook
                 TabView.TabItems.Add(newTab);
             }
             TabView.SelectedItem = search;
+        }
+
+        private void LoadSettings()
+        {
+            Utility.Converter = new DefaultDocumentConvert();
         }
     }
 }
