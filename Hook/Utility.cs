@@ -18,6 +18,7 @@ namespace Hook
             return resourceLoader.GetString(code);
         }
 
-        public static DocumentConvert Converter;
+        public static DocumentConvert DefaultConverter;
+        public static ObservableCollection<DocumentConvert> AvailableConverters = new ObservableCollection<DocumentConvert>();
     }
 }

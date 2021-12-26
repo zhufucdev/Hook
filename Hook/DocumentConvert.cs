@@ -3,9 +3,11 @@ using System.Threading.Tasks;
 
 namespace Hook
 {
-    internal interface DocumentConvert
+    internal abstract class DocumentConvert
     {
-        Task Convert(string path, string output);
-        Guid GetID();
+        public abstract Task Convert(string path, string output);
+        public abstract Guid ID { get; }
+        public abstract string Name { get; }
+        public abstract string Path { get; }
     }
 }

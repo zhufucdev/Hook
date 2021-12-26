@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -49,8 +50,8 @@ namespace Hook
             CacheMethod = cacheMethod;
         }
 
-        private static StorageFolder cache {
-            get => ApplicationData.Current.RoamingFolder;
+        private static StorageFolder Cache {
+            get => ApplicationData.Current.LocalCacheFolder;
         }
 
         public void Open()
@@ -61,24 +62,41 @@ namespace Hook
             }
             MainPage.Instance.OpenDocument(this);
             LastTouched = DateTime.Now;
-            
-            RecentDocs.Remove(this);
-            RecentDocs.Add(this);
+
+            // ensure this appears first in the list
+            int index = RecentDocs.IndexOf(this);
+            if (index != -1)
+            {
+                RecentDocs.Move(index, 0);
+            }
+            else
+            {
+                RecentDocs.Insert(0, this);
+            }
             Sync(this);
         }
 
         public async Task<StorageFile> BuildCache()
         {
             var name = GetDesignedCacheName(this) + ".html";
-            var outPath = System.IO.Path.Combine(cache.Path, name);
+            var outPath = System.IO.Path.Combine(Cache.Path, name);
+            var coverter = Utility.DefaultConverter;
 
-            var coverter = Utility.Converter;
-            await coverter.Convert(Path, outPath);
-
-            if (CacheMethod != coverter.GetID())
+            byte[] currentSHA = new byte[0];
+            try
             {
-                // sync if cache method has change
-                CacheMethod = coverter.GetID();
+                currentSHA = await CalcuateSHA(this);
+            }
+            catch (Exception)
+            {
+            }
+
+            if (SHA == null || CacheMethod != coverter.ID || !currentSHA.SequenceEqual(SHA))
+            {
+                // cache method or origin file has changed, cleanbuild
+                await coverter.Convert(Path, outPath);
+                CacheMethod = coverter.ID;
+                SHA = currentSHA;
                 Sync(this);
             }
 
@@ -94,6 +112,7 @@ namespace Hook
         public static async void LoadFromDisk()
         {
             var saves = await SaveFolder.GetFilesAsync();
+            var list = new List<DocumentInfo>();
             foreach (var file in saves)
             {
                 if (System.IO.Path.GetExtension(file.Name) != ".json")
@@ -112,11 +131,16 @@ namespace Hook
                         SHA = (byte[])tmp;
                     }
                     var instance = new DocumentInfo((string)obj["Path"], (DateTime)obj["LastTouched"], SHA, (Guid)obj["CacheMethod"]);
-                    RecentDocs.Add(instance);
+                    list.Add(instance);
                 }
                 catch (Exception)
                 {
                 }
+            }
+            list.Sort((c1, c2) => c1.LastTouched - c2.LastTouched > TimeSpan.Zero ? 1 : -1);
+            foreach (var doc in list)
+            {
+                RecentDocs.Add(doc);
             }
         }
 
@@ -163,6 +187,25 @@ namespace Hook
                 name += Convert.ToBase64String(sha).Replace('/', '-');
             }
             return name;
+        }
+
+        /// <summary>
+        /// Calculate the checksum of a document from filesystem
+        /// </summary>
+        /// <param name="doc">The doc</param>
+        /// <returns>Checksum via SHA256</returns>
+        private static async Task<byte[]> CalcuateSHA(DocumentInfo doc)
+        {
+            byte[] result = null;
+            var file = await StorageFile.GetFileFromPathAsync(doc.Path);
+            using (var sha256 = SHA256.Create())
+            {
+                using (var stream = await file.OpenStreamForReadAsync())
+                {
+                    result = sha256.ComputeHash(stream);
+                }
+            }
+            return result;
         }
 
         public static string[] SupportedFormats = { ".docx", ".doc" };

@@ -86,5 +86,10 @@ namespace Hook
         {
             MainPage.Instance.OpenDocument(e.ClickedItem as DocumentInfo);
         }
+
+        private void SettingsButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            MainPage.Instance.OpenSettingsScreen();
+        }
     }
 }

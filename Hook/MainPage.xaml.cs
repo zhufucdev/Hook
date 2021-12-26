@@ -90,6 +90,22 @@ namespace Hook
             TabView.TabItems.Add(newTab);
         }
 
+        public void OpenSettingsScreen()
+        {
+            var newTab = new muxc.TabViewItem()
+            {
+                Header = Utility.GetResourceString("SettingsHeader/Text"),
+                IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Setting }
+            };
+
+            var frame = new Frame();
+            newTab.Content = frame;
+            frame.Navigate(typeof(SettingsPage));
+
+            TabView.TabItems.Add(newTab);
+            TabView.SelectedItem = newTab;
+        }
+
         public void CloseDocument(DocumentInfo doc)
         {
             foreach (muxc.TabViewItem item in TabView.TabItems)
@@ -125,9 +141,37 @@ namespace Hook
             TabView.SelectedItem = search;
         }
 
-        private void LoadSettings()
+        private async void LoadSettings()
         {
-            Utility.Converter = new DefaultDocumentConvert();
+            #region Converters
+            var builtin = new DefaultDocumentConvert();
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
+            Utility.AvailableConverters.Add(builtin);
+
+            // setup default converter
+            if (roamingSettings.Values.ContainsKey("DefaultConverter"))
+            {
+                Utility.DefaultConverter = 
+                    Utility.AvailableConverters.FirstOrDefault
+                    (converter => converter.ID.ToString() == roamingSettings.Values["DefaultConverter"].ToString());
+                if (Utility.DefaultConverter == null)
+                {
+                    await new ContentDialog()
+                    {
+                        Title = Utility.GetResourceString("ConverterNotFound/Title"),
+                        Content = Utility.GetResourceString("ConverterNotFound/Content"),
+                        CloseButtonText = Utility.GetResourceString("CloseButton/Text")
+                    }.ShowAsync();
+                    Utility.DefaultConverter = builtin;
+                }
+            }
+            else
+            {
+                Utility.DefaultConverter = builtin;
+                roamingSettings.Values["DefaultConverter"] = builtin.ID.ToString();
+            }
+            #endregion
+
         }
     }
 }
