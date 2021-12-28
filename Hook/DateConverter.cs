@@ -12,12 +12,13 @@ namespace Hook
                 return null;
             }
             var date = (DateTime)value;
-            if (DateTime.Now - DateTime.Today < TimeSpan.FromHours(24))
+            string testPattern = "MM-dd-yyyy";
+            if (date.ToString(testPattern) == DateTime.Now.ToString(testPattern))
             {
                 // it's today
                 return date.ToString("hh:mm tt");
             }
-            return date.ToString("MMMM dd");
+            return date.ToString("MMMM dd hh:mm tt");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

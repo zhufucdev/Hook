@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -90,6 +91,19 @@ namespace Hook
         private void SettingsButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             MainPage.Instance.OpenSettingsScreen();
+        }
+
+        private void RemoveMenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var doc = (sender as MenuFlyoutItem).DataContext as DocumentInfo;
+            DocumentInfo.RecentDocs.Remove(doc);
+            DocumentInfo.SaveToDisk();
+        }
+
+        private void ClearMenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            DocumentInfo.RecentDocs.Clear();
+            DocumentInfo.SaveToDisk();
         }
     }
 }

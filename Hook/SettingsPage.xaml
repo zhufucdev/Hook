@@ -5,26 +5,27 @@
     xmlns:local="using:Hook"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Frame Padding="12">
-        <Pivot x:Uid="SettingsPivot">
-            <PivotItem x:Uid="GeneralPivot" Header="General">
+    <ScrollViewer>
+        <StackPanel Padding="12" Spacing="10" Orientation="Vertical">
+            <TextBlock x:Uid="SettingsHeader" Text="Settings" Style="{ThemeResource HeaderTextBlockStyle}"/>
+            <TextBlock x:Uid="GeneralHeader" Text="General" Style="{ThemeResource BaseTextBlockStyle}"/>
 
-            </PivotItem>
-            <PivotItem x:Uid="ConverterPivot" Header="Converter">
-                <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:DocumentConvert">
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch">
-                                <TextBlock Text="{Binding Name}" Style="{ThemeResource BaseTextBlockStyle}"/>
-                                <TextBlock Text="{Binding Path}" Style="{ThemeResource BodyTextBlockStyle}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>                
-            </PivotItem>
-        </Pivot>
-    </Frame>
+
+            <TextBlock x:Uid="ConverterHeader" Text="Converters" Style="{ThemeResource BaseTextBlockStyle}"/>
+            <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False" HorizontalAlignment="Stretch">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="local:DocumentConvert">
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="0,10,0,10">
+                            <TextBlock Text="{Binding Name}" Style="{ThemeResource BaseTextBlockStyle}"/>
+                            <TextBlock Text="{Binding Path}" Style="{ThemeResource BodyTextBlockStyle}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

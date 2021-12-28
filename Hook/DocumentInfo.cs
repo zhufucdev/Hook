@@ -60,8 +60,8 @@ namespace Hook
             {
                 throw new NotSupportedException();
             }
-            MainPage.Instance.OpenDocument(this);
             LastTouched = DateTime.Now;
+            MainPage.Instance.OpenDocument(this);
 
             // ensure this appears first in the list
             int index = RecentDocs.IndexOf(this);
@@ -137,18 +137,58 @@ namespace Hook
                 {
                 }
             }
-            list.Sort((c1, c2) => c1.LastTouched - c2.LastTouched > TimeSpan.Zero ? 1 : -1);
+            list.Sort((c1, c2) => c2.LastTouched - c1.LastTouched > TimeSpan.Zero ? 1 : -1);
             foreach (var doc in list)
             {
                 RecentDocs.Add(doc);
             }
+
+            RecentDocs.CollectionChanged += RecentDocs_CollectionChanged;
         }
 
-        public static void SaveToDesk()
+
+        private static List<DocumentInfo> Removed = new List<DocumentInfo>();
+        private static void RecentDocs_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+            {
+                foreach (DocumentInfo doc in e.OldItems) {
+                    Removed.Add(doc);
+                }
+            }
+            else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                ClearFromDisk();
+            }
+        }
+
+        public static async void SaveToDisk()
         {
             foreach (var doc in RecentDocs)
             {
                 Sync(doc);
+            }
+            foreach (var doc in Removed)
+            {
+                var name = GetDesignedCacheName(doc) + ".json";
+                var file = await SaveFolder.TryGetItemAsync(name);
+                if (file != null && file is StorageFile)
+                {
+                    await file.DeleteAsync();
+                }
+            }
+            Removed.Clear();
+        }
+
+        public static async void ClearFromDisk()
+        {
+            var files = await SaveFolder.GetFilesAsync();
+            foreach (var file in files)
+            {
+                if (file.Name.EndsWith(".json"))
+                {
+                    await file.DeleteAsync();
+                }
             }
         }
 

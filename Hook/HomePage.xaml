@@ -31,6 +31,21 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:DocumentInfo">
                         <Grid Margin="0 10 0 10">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Remove" x:Uid="RemoveButton" Click="RemoveMenuFlyoutItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Remove"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Remove" x:Uid="ClearButton" Click="ClearMenuFlyoutItem_Click">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Clear"/>
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
+                            
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
