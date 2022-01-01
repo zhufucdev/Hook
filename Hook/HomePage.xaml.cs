@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -24,7 +26,7 @@ namespace Hook
                 var items = await e.DataView.GetStorageItemsAsync();
                 foreach (var item in items)
                 {
-                    if (item.IsOfType(StorageItemTypes.File))
+                    if (item.IsOfType(StorageItemTypes.File) && DocumentInfo.SupportedFormats.Contains(Path.GetExtension(item.Path).ToLower()))
                     {
                         TryOpen(item as StorageFile);
                     }
@@ -32,7 +34,7 @@ namespace Hook
             }
         }
 
-        private void Page_DragOver(object sender, Windows.UI.Xaml.DragEventArgs e)
+        private async void Page_DragOver(object sender, Windows.UI.Xaml.DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
         }
@@ -104,6 +106,11 @@ namespace Hook
         {
             DocumentInfo.RecentDocs.Clear();
             DocumentInfo.SaveToDisk();
+        }
+
+        private void PluginButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            MainPage.Instance.OpenPluginScreen();
         }
     }
 }

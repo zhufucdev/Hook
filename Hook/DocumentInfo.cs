@@ -50,7 +50,7 @@ namespace Hook
             CacheMethod = cacheMethod;
         }
 
-        private static StorageFolder Cache {
+        public static StorageFolder Cache {
             get => ApplicationData.Current.LocalCacheFolder;
         }
 
@@ -175,6 +175,7 @@ namespace Hook
                 if (file != null && file is StorageFile)
                 {
                     await file.DeleteAsync();
+                    
                 }
             }
             Removed.Clear();

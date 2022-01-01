@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using Windows.UI;
 
 namespace Hook
 {
@@ -15,7 +16,8 @@ namespace Hook
         public static string GetResourceString(string code)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForCurrentView();
-            return resourceLoader.GetString(code);
+            var str = resourceLoader.GetString(code);
+            return string.IsNullOrWhiteSpace(str) ? code : str;
         }
 
         public static DocumentConvert DefaultConverter;

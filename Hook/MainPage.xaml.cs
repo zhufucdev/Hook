@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Hook.Plugin;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Windows.ApplicationModel.Core;
@@ -72,6 +74,15 @@ namespace Hook
             {
                 // remove the given item by args
                 TabView.TabItems.Remove(item);
+                if (item is muxc.TabViewItem)
+                {
+                    var cast = item as muxc.TabViewItem;
+                    var page = (cast.Content as Frame).Content;
+                    if (page is ContentPage)
+                    {
+                        (page as ContentPage).Close();
+                    }
+                }
             }
         }
 
@@ -101,6 +112,22 @@ namespace Hook
             var frame = new Frame();
             newTab.Content = frame;
             frame.Navigate(typeof(SettingsPage));
+
+            TabView.TabItems.Add(newTab);
+            TabView.SelectedItem = newTab;
+        }
+
+        public void OpenPluginScreen()
+        {
+            var newTab = new muxc.TabViewItem()
+            {
+                Header = Utility.GetResourceString("PlugInsUIHeader/Text"),
+                IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Repair }
+            };
+
+            var frame = new Frame();
+            newTab.Content = frame;
+            frame.Navigate(typeof(PluginPage));
 
             TabView.TabItems.Add(newTab);
             TabView.SelectedItem = newTab;
@@ -171,7 +198,10 @@ namespace Hook
                 roamingSettings.Values["DefaultConverter"] = builtin.ID.ToString();
             }
             #endregion
-
+            #region Plugins
+            PluginManager.Initialize();
+            
+            #endregion
         }
     }
 }

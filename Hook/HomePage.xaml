@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="24" AllowDrop="True" Drop="Page_Drop" DragOver="Page_DragOver">
+    <Grid Margin="24">
         <Grid.Resources>
             <local:DateConverter x:Key="FormatConverter"/>
         </Grid.Resources>
@@ -27,7 +27,8 @@
                    Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0" Margin="0,0,0,20"/>
         <StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0">
             <TextBlock x:Uid="RecentHeader" Text="Recent Opend"/>
-            <ListView x:Name="RecentList" Margin="0 0 10 0" SelectionMode="None" IsItemClickEnabled="True" ItemClick="RecentList_ItemClick">
+            <ListView x:Name="RecentList" Margin="0 0 10 0" SelectionMode="None" IsItemClickEnabled="True" ItemClick="RecentList_ItemClick"
+                      AllowDrop="True" Drop="Page_Drop" DragOver="Page_DragOver">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:DocumentInfo">
                         <Grid Margin="0 10 0 10">
@@ -81,7 +82,8 @@
                     <TextBlock Text="Settings" x:Uid="SettingsHeader" VerticalAlignment="Center" FontSize="18"/>
                 </StackPanel>
             </Button>
-            <Button Style="{StaticResource ButtonRevealStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+            <Button Style="{StaticResource ButtonRevealStyle}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Click="PluginButton_Click">
                 <StackPanel Orientation="Horizontal">
                     <SymbolIcon Symbol="Repair"
                             Width="32" Height="32" Margin="0 0 4 0" VerticalAlignment="Center" HorizontalAlignment="Center"/>

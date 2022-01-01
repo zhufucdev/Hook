@@ -10,7 +10,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
-        <StackPanel Padding="12" Spacing="10" Orientation="Vertical">
+        <StackPanel Padding="24" Spacing="10" Orientation="Vertical">
             <TextBlock x:Uid="SettingsHeader" Text="Settings" Style="{ThemeResource HeaderTextBlockStyle}"/>
             <TextBlock x:Uid="GeneralHeader" Text="General" Style="{ThemeResource BaseTextBlockStyle}"/>
 

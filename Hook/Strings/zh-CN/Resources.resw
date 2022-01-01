@@ -123,6 +123,9 @@
   <data name="BuiltinConverter.Name" xml:space="preserve">
     <value>内建转换器</value>
   </data>
+  <data name="CancelButton.Text" xml:space="preserve">
+    <value>取消</value>
+  </data>
   <data name="ClearButton.Text" xml:space="preserve">
     <value>清空列表</value>
   </data>
@@ -140,6 +143,12 @@
   </data>
   <data name="ConvertHeader.Text" xml:space="preserve">
     <value>正在将文档转换为网页</value>
+  </data>
+  <data name="DropInstallBody.Text" xml:space="preserve">
+    <value>支持.hplugin文件，安装后将在文档或Hook中实现插件的功能</value>
+  </data>
+  <data name="DropInstallHeader.Text" xml:space="preserve">
+    <value>拖放以安装</value>
   </data>
   <data name="ErrorOpen.Title" xml:space="preserve">
     <value>打开文件时出现错误</value>
@@ -165,6 +174,9 @@
   <data name="PlugInHeader.Text" xml:space="preserve">
     <value>管理插件</value>
   </data>
+  <data name="PlugInsUIHeader.Text" xml:space="preserve">
+    <value>插件</value>
+  </data>
   <data name="RecentHeader.Text" xml:space="preserve">
     <value>最近打开</value>
   </data>
@@ -173,5 +185,14 @@
   </data>
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>设置</value>
+  </data>
+  <data name="Uninstallation.Content" xml:space="preserve">
+    <value>相关数据将被清空且无法恢复。是否继续？</value>
+  </data>
+  <data name="Uninstallation.Title" xml:space="preserve">
+    <value>将卸载此插件</value>
+  </data>
+  <data name="UninstallButton.Text" xml:space="preserve">
+    <value>卸载</value>
   </data>
 </root>

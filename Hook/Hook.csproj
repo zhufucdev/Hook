@@ -126,9 +126,17 @@
       <DependentUpon>ContentPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="DocumentInfo.cs" />
+    <Compile Include="DocumentOpenArgs.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PluginPage.xaml.cs">
+      <DependentUpon>PluginPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Plugin\JSDocumentView.cs" />
+    <Compile Include="Plugin\JSPlugin.cs" />
+    <Compile Include="Plugin\PluginManager.cs" />
+    <Compile Include="Plugin\SimpleDocumentView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
@@ -214,12 +222,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="PluginPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="SettingsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Jint">
+      <Version>3.0.0-beta-2037</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.13</Version>
     </PackageReference>
@@ -238,6 +253,12 @@
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\API\API.csproj">
+      <Project>{0b5afb58-7ef4-46db-b79f-7ef0b6043c9f}</Project>
+      <Name>API</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

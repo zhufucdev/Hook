@@ -1,28 +1,23 @@
-﻿using System;
+﻿using Hook.API;
+using Hook.Plugin;
+using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
-
+#pragma warning disable CS8305 // 类型仅用于评估，在将来的更新中可能会被更改或删除。
 namespace Hook
 {
-    /// <summary>
-    /// 可用于自身或导航至 Frame 内部的空白页。
-    /// </summary>
     public sealed partial class ContentPage : Page
     {
+        public static Dictionary<DocumentInfo, WebView2> OpenedDocument = new Dictionary<DocumentInfo, WebView2>();
+        public DocumentInfo Current { get; private set; }
+
         public ContentPage()
         {
             this.InitializeComponent();
@@ -36,15 +31,17 @@ namespace Hook
 
         private async void OpenDocument(DocumentInfo doc)
         {
-            await Task.Run(async () => {
-                Windows.Storage.StorageFile file;
+            Windows.Storage.StorageFile cache = null;
+            await Task.Run(async () =>
+            {
                 try
                 {
-                    file = await doc.BuildCache();
+                    cache = await doc.BuildCache();
                 }
                 catch (Exception ex)
                 {
-                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () => {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                    {
                         Prograss.ShowError = true;
                         var dialog = new ContentDialog()
                         {
@@ -57,15 +54,28 @@ namespace Hook
                     });
                     return;
                 }
-                await Dispatcher.RunAsync(
-                        Windows.UI.Core.CoreDispatcherPriority.High,
-                        () =>
-                        {
-                            WebView.Source = new Uri("file://" + file.Path);
-                            ConvertingLayout.Visibility = Visibility.Collapsed;
-                        }
-                );
             });
+            if (cache == null)
+            {
+                return;
+            }
+
+            WebView.Source = new Uri("file://" + cache.Path);
+            ConvertingLayout.Visibility = Visibility.Collapsed;
+
+            OpenedDocument[doc] = WebView;
+            Current = doc;
+            await WebView.EnsureCoreWebView2Async();
+            // somehow, an interval is a must
+            await Task.Delay(200);
+            DocumentOpened?.Invoke(this, new DocumentOpenArgs(WebView, Current));
         }
+
+        public void Close()
+        {
+            WebView.Close();
+        }
+
+        public static event EventHandler<DocumentOpenArgs> DocumentOpened;
     }
 }

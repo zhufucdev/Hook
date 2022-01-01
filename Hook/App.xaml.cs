@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hook.Plugin;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -94,6 +95,7 @@ namespace Hook
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: 保存应用程序状态并停止任何后台活动
+            PluginManager.UnloadAll();
             deferral.Complete();
         }
     }
