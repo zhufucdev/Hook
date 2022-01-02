@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 
 namespace Hook
 {
@@ -213,6 +214,12 @@ namespace Hook
         public static DocumentInfo Parse(string path) => 
             RecentDocs.FirstOrDefault((e) => e.Path == path) 
             ?? new DocumentInfo(path);
+
+        public static DocumentInfo Parse(IStorageFile file)
+        {
+            StorageApplicationPermissions.FutureAccessList.Add(file);
+            return Parse(file.Path);
+        }
 
         /// <summary>
         /// Result: original name + base64(sha1(doc.Path))

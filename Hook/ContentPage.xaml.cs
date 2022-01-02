@@ -68,14 +68,16 @@ namespace Hook
             await WebView.EnsureCoreWebView2Async();
             // somehow, an interval is a must
             await Task.Delay(200);
-            DocumentOpened?.Invoke(this, new DocumentOpenArgs(WebView, Current));
+            DocumentOpened?.Invoke(this, new DocumentEventArgs(WebView, Current));
         }
 
         public void Close()
         {
             WebView.Close();
+            DocumentClosed?.Invoke(this, new DocumentEventArgs(WebView, Current));
         }
 
-        public static event EventHandler<DocumentOpenArgs> DocumentOpened;
+        public static event EventHandler<DocumentEventArgs> DocumentOpened;
+        public static event EventHandler<DocumentEventArgs> DocumentClosed;
     }
 }

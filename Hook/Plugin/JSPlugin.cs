@@ -30,10 +30,13 @@ namespace Hook.Plugin
             Initialize();
         }
 
+        /// <summary>
+        /// Functions and values provided by API
+        /// </summary>
         private void Initialize()
         {
             Engine.SetValue("addEventListener", new Action<string, Jint.Native.JsValue>(J_addEventListener));
-            Engine.SetValue("getOpenedDocument", new Func<JSDocumentView[]>(J_getOpenedDocuments));
+            Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView[]>(J_getOpenedDocuments));
         }
 
         private event EventHandler Unloaded;
@@ -54,11 +57,10 @@ namespace Hook.Plugin
             switch (eventName)
             {
                 case "documentLoaded":
-                    ContentPage.DocumentOpened += (s, v) => {
-                        wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
-                    };
+                    ContentPage.DocumentOpened += (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
                     break;
                 case "documentClosed":
+                    ContentPage.DocumentClosed += (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
                     break;
                 case "unload":
                     Unloaded += wrapCallbackZeroArgument;

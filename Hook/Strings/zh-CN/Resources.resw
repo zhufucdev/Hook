@@ -183,8 +183,29 @@
   <data name="RemoveButton.Text" xml:space="preserve">
     <value>清除此项</value>
   </data>
+  <data name="ReplaceButton.Text" xml:space="preserve">
+    <value>替换</value>
+  </data>
+  <data name="ReplacePlugin.Content" xml:space="preserve">
+    <value>已安装名为%name%的插件，是否替换？
+已安装的插件：
+  作者：%old_author%
+  版本：%old_version%
+将要安装的插件：
+  作者：%new_author%
+  版本：%new_version%</value>
+  </data>
+  <data name="ReplacePlugin.Title" xml:space="preserve">
+    <value>替换插件</value>
+  </data>
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>设置</value>
+  </data>
+  <data name="StartupDeny.Message" xml:space="preserve">
+    <value>要使用插件的全部功能，请在任务管理器或系统设置中启用自动启动</value>
+  </data>
+  <data name="StartupDeny.Title" xml:space="preserve">
+    <value>自动启动请求受拒绝</value>
   </data>
   <data name="Uninstallation.Content" xml:space="preserve">
     <value>相关数据将被清空且无法恢复。是否继续？</value>
@@ -194,5 +215,8 @@
   </data>
   <data name="UninstallButton.Text" xml:space="preserve">
     <value>卸载</value>
+  </data>
+  <data name="UnknownHeader.Text" xml:space="preserve">
+    <value>未知</value>
   </data>
 </root>

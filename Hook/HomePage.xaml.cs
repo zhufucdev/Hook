@@ -60,10 +60,9 @@ namespace Hook
 
         private async void TryOpen(StorageFile file)
         {
-            StorageApplicationPermissions.FutureAccessList.Add(file);
             try
             {
-                DocumentInfo.Parse(file.Path).Open();
+                DocumentInfo.Parse(file).Open();
             }
             catch (NotSupportedException)
             {

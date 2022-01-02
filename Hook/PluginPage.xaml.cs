@@ -56,10 +56,10 @@ namespace Hook
         {
             var dialog = new ContentDialog()
             {
-                Title = Utility.GetResourceString("Uninstallation.Title"),
-                Content = Utility.GetResourceString("Uninstallation.Content"),
-                CloseButtonText = Utility.GetResourceString("CancelButton.Text"),
-                PrimaryButtonText = Utility.GetResourceString("UninstallationButton.Text")
+                Title = Utility.GetResourceString("Uninstallation/Title"),
+                Content = Utility.GetResourceString("Uninstallation/Content"),
+                CloseButtonText = Utility.GetResourceString("CancelButton/Text"),
+                PrimaryButtonText = Utility.GetResourceString("UninstallationButton/Text")
             };
 
             var result = await dialog.ShowAsync();

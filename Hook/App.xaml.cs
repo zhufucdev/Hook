@@ -6,8 +6,10 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -15,6 +17,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace Hook
 {
@@ -40,14 +43,22 @@ namespace Hook
         /// <param name="e">有关启动请求和过程的详细信息。</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            Frame rootFrame = Window.Current.Content as Frame;
+            Launch(e);
+        }
+
+        private void Launch(IActivatedEventArgs e, object param = null)
+        {
+            Grid rootGrid = Window.Current.Content as Grid;
+            Frame rootFrame;
 
             // 不要在窗口已包含内容时重复应用程序初始化，
             // 只需确保窗口处于活动状态
-            if (rootFrame == null)
+            if (rootGrid == null)
             {
                 // 创建要充当导航上下文的框架，并导航到第一页
+                rootGrid = new Grid();
                 rootFrame = new Frame();
+                rootGrid.Children.Add(rootFrame);
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
@@ -57,17 +68,28 @@ namespace Hook
                 }
 
                 // 将框架放在当前窗口中
-                Window.Current.Content = rootFrame;
+                Window.Current.Content = rootGrid;
+            }
+            else
+            {
+                rootFrame = rootGrid.Children[0] as Frame;
             }
 
-            if (e.PrelaunchActivated == false)
+            if (!(e is IPrelaunchActivatedEventArgs) || ((IPrelaunchActivatedEventArgs)e).PrelaunchActivated == false)
             {
                 if (rootFrame.Content == null)
                 {
                     // 当导航堆栈尚未还原时，导航到第一页，
                     // 并通过将所需信息作为导航参数传入来配置
                     // 参数
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    if (e is ILaunchActivatedEventArgs)
+                    {
+                        rootFrame.Navigate(typeof(MainPage), (e as ILaunchActivatedEventArgs).Arguments);
+                    }
+                    else
+                    {
+                        rootFrame.Navigate(typeof(MainPage), param);
+                    }
                 }
                 // 确保当前窗口处于活动状态
                 Window.Current.Activate();
@@ -84,6 +106,11 @@ namespace Hook
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
+        protected override void OnActivated(IActivatedEventArgs args)
+        {
+            Launch(args);
+        }
+
         /// <summary>
         /// 在将要挂起应用程序执行时调用。  在不知道应用程序
         /// 无需知道应用程序会被终止还是会恢复，
@@ -98,5 +125,43 @@ namespace Hook
             PluginManager.UnloadAll();
             deferral.Complete();
         }
+
+        protected override void OnFileActivated(FileActivatedEventArgs args)
+        {
+            Launch(args, "--no-homescreen");
+            foreach (var file in args.Files) {
+                if (file is IStorageFile)
+                {
+                    var doc = DocumentInfo.Parse(file as IStorageFile);
+                    MainPage.Instance.OpenDocument(doc);
+                }
+            }
+        }
+
+        public static void ShowInfoBar(string title, string message, muxc.InfoBarSeverity severity)
+        {
+            var rootGrid = Window.Current.Content as Grid;
+            if (rootGrid == null)
+            {
+                return;
+            }
+            var infoBar = rootGrid.FindName("mainInfoBar") as muxc.InfoBar;
+            if (infoBar == null)
+            {
+                infoBar = new muxc.InfoBar()
+                {
+                    Name = "mainInfoBar",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 30, 0, 0)
+                };
+                rootGrid.Children.Add(infoBar);
+            }
+            infoBar.Title = title;
+            infoBar.Message = message;
+            infoBar.Severity = severity;
+            infoBar.IsOpen = true;
+        }
+
+        public const string PARAM_NO_HOME = "--no-homescreen";
     }
 }

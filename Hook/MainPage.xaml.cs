@@ -8,6 +8,7 @@ using Windows.Storage;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace Hook
@@ -30,7 +31,6 @@ namespace Hook
             Window.Current.SetTitleBar(CustomDragRegion);
 
             DocumentInfo.LoadFromDisk();
-            AddHomeScreen();
 
             Instance = this;
             LoadSettings();
@@ -199,9 +199,28 @@ namespace Hook
             }
             #endregion
             #region Plugins
-            PluginManager.Initialize();
+            await PluginManager.Initialize();
             
             #endregion
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            bool addHome = true;
+
+            if (e.Parameter is string)
+            {
+                var arg = e.Parameter as string;
+                if (arg.Contains(App.PARAM_NO_HOME))
+                {
+                    addHome = false;
+                }
+            }
+
+            if (addHome)
+            {
+                AddHomeScreen();
+            }
         }
     }
 }

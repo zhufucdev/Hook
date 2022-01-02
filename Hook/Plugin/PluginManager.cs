@@ -8,8 +8,10 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Search;
+using Windows.UI.Xaml.Controls;
 
 namespace Hook.Plugin
 {
@@ -20,18 +22,43 @@ namespace Hook.Plugin
 
         public static readonly string[] SupportedFormats = { ".hplugin" };
 
+        private static StartupTask startupTask;
         private static async Task<IPlugin> Load(StorageFolder root)
         {
             var manifestFile = await root.GetFileAsync(JSPlugin.PluginManifestFileName);
             var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile));
             var plugin = new JSPlugin(manifest, root);
-            plugin.OnLoad();
 
+            if (manifest.ContainsKey("require"))
+            {
+                var requirements = manifest["require"].Select(v => (string)v);
+                if (requirements.Contains("startWithSystem"))
+                {
+                    var state = startupTask.State;
+                    if (state == StartupTaskState.Disabled)
+                    {
+                        // task is disabled but can be enabled
+                        var newState = await startupTask.RequestEnableAsync();
+                        if (newState != StartupTaskState.Enabled)
+                        {
+                            ShowStartupDenialInfo();
+                        }
+                    }
+                    else if (state == StartupTaskState.DisabledByUser)
+                    {
+                        ShowStartupDenialInfo();
+                    }
+                }
+            }
+
+            plugin.OnLoad();
             return plugin;
         }
 
-        public static async void Initialize()
+        public static async Task Initialize()
         {
+            startupTask = await StartupTask.GetAsync("PluginStartUp");
+
             var local = ApplicationData.Current.LocalFolder;
             var ins = await local.TryGetItemAsync("plugins");
             if (ins != null && !(ins is StorageFolder))
@@ -84,6 +111,43 @@ namespace Hook.Plugin
 
             var manifestJson = JObject.Parse(new StreamReader(manifest).ReadToEnd());
             string name = (string)manifestJson["name"];
+
+            async Task<bool> testExisting()
+            {
+                var item = await Installation.TryGetItemAsync(name);
+                if (item == null || !(item is IStorageFolder))
+                {
+                    return true;
+                }
+                var oldPlugin = Plugins.FirstOrDefault(p => p.Name == name);
+
+                var dialog = new ContentDialog()
+                {
+                    Title = Utility.GetResourceString("ReplacePlugin/Title"),
+                    Content = Utility.GetResourceString("ReplacePlugin/Content")
+                                    .Replace("%name%", name)
+                                    .Replace("%old_author%", oldPlugin.Author)
+                                    .Replace("%new_author%", (string)manifestJson["author"])
+                                    .Replace("%old_version%", oldPlugin.Version)
+                                    .Replace("%new_version%", (string)manifestJson["version"]),
+                    PrimaryButtonText = Utility.GetResourceString("ReplaceButton/Text"),
+                    SecondaryButtonText = Utility.GetResourceString("CloseButton/Text")
+                };
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    await Uninstall(oldPlugin);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if (!await testExisting())
+            {
+                return;
+            }
             var folder = await Installation.CreateFolderAsync(name);
             if (directUnzip)
             {
@@ -147,7 +211,7 @@ namespace Hook.Plugin
             Plugins.Add(plugin);
         }
 
-        public static async void Uninstall(IPlugin plugin)
+        public static async Task Uninstall(IPlugin plugin)
         {
             if (plugin is JSPlugin)
             {
@@ -169,6 +233,22 @@ namespace Hook.Plugin
             {
                 plugin.OnUnload();
             }
+        }
+
+        private static bool denialInfoShown = false;
+        private static void ShowStartupDenialInfo()
+        {
+            if (denialInfoShown)
+            {
+                return;
+            }
+            denialInfoShown = true;
+
+            App.ShowInfoBar(
+                title: Utility.GetResourceString("StartupDeny/Title"),
+                message: Utility.GetResourceString("StartupDeny/Message"),
+                severity: Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning
+            );
         }
     }
 }
