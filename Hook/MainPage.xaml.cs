@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI.ViewManagement;
@@ -199,7 +200,7 @@ namespace Hook
             }
             #endregion
             #region Plugins
-            await PluginManager.Initialize();
+            await Task.Run(PluginManager.Initialize);
             
             #endregion
         }
@@ -207,6 +208,7 @@ namespace Hook
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             bool addHome = true;
+            bool startupTask = false;
 
             if (e.Parameter is string)
             {
@@ -215,11 +217,19 @@ namespace Hook
                 {
                     addHome = false;
                 }
+                if (arg.Contains(App.PARAM_FROM_STARTUP))
+                {
+                    startupTask = true;
+                }
             }
 
             if (addHome)
             {
                 AddHomeScreen();
+            }
+            if (startupTask)
+            {
+                PluginManager.RecognizeStartupTask();
             }
         }
     }

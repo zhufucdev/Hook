@@ -20,5 +20,5 @@ Dependencies:
 - Micosoft.UI.Xaml
 - OpenXMLPowerTools
 - Newtonsoft.Json
-## Creating a Plugin
+# Creating a Plugin
 For documentation and guideline, head to [Plugin Creation](How_To_Create_Plugin.md).

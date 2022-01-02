@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Hook.Plugin;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,47 +7,44 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 
 namespace Hook
 {
-    public class DocumentInfo
+    public class DocumentInfo : IDocument
     {
-        public readonly string Path;
+        private readonly string _path;
         public byte[] SHA
         {
             private set;
             get;
         }
-        public DateTime LastTouched
-        { 
-            private set; 
-            get; 
-        }
+        private DateTime _lastTouched;
         public Guid CacheMethod
         {
             private set;
             get;
         }
 
-        public string Name
-        {
-            get => System.IO.Path.GetFileNameWithoutExtension(Path);
-        }
+        public string Path => _path;
+
+        public DateTime LastTouched => _lastTouched;
+
+        public string Name => System.IO.Path.GetFileName(_path);
+
 
         private DocumentInfo(string path)
         {
-            Path = path;
-            LastTouched = DateTime.Now;
+            _path = path;
+            _lastTouched = DateTime.Now;
         }
 
         private DocumentInfo(string path, DateTime lastTouched, byte[] sha, Guid cacheMethod)
         {
-            Path = path;
-            LastTouched = lastTouched;
+            _path = path;
+            _lastTouched = lastTouched;
             SHA = sha;
             CacheMethod = cacheMethod;
         }
@@ -61,19 +59,22 @@ namespace Hook
             {
                 throw new NotSupportedException();
             }
-            LastTouched = DateTime.Now;
-            MainPage.Instance.OpenDocument(this);
+            _lastTouched = DateTime.Now;
+            _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, () => {
+                MainPage.Instance.OpenDocument(this);
 
-            // ensure this appears first in the list
-            int index = RecentDocs.IndexOf(this);
-            if (index != -1)
-            {
-                RecentDocs.Move(index, 0);
-            }
-            else
-            {
-                RecentDocs.Insert(0, this);
-            }
+                // ensure this appears first in the list
+                int index = RecentDocs.IndexOf(this);
+                if (index != -1)
+                {
+                    RecentDocs.Move(index, 0);
+                }
+                else
+                {
+                    RecentDocs.Insert(0, this);
+                }
+            });
+
             Sync(this);
         }
 

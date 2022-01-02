@@ -1,21 +1,12 @@
 ﻿using Hook.API;
 using Hook.Plugin;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // https://go.microsoft.com/fwlink/?LinkId=234238 上介绍了“空白页”项模板
 
@@ -59,7 +50,7 @@ namespace Hook
                 Title = Utility.GetResourceString("Uninstallation/Title"),
                 Content = Utility.GetResourceString("Uninstallation/Content"),
                 CloseButtonText = Utility.GetResourceString("CancelButton/Text"),
-                PrimaryButtonText = Utility.GetResourceString("UninstallationButton/Text")
+                PrimaryButtonText = Utility.GetResourceString("UninstallButton/Text")
             };
 
             var result = await dialog.ShowAsync();

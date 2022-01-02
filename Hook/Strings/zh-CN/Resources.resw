@@ -171,6 +171,9 @@
   <data name="NotSupported.Title" xml:space="preserve">
     <value>不支持的文件格式</value>
   </data>
+  <data name="PlugInFailure.Title" xml:space="preserve">
+    <value>无法初始化插件%s</value>
+  </data>
   <data name="PlugInHeader.Text" xml:space="preserve">
     <value>管理插件</value>
   </data>

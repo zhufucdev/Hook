@@ -46,7 +46,7 @@ API is a way to communicate with Hook, which can be accessed in the main.js scri
 - **String eventName:** can be one of the followings
 
 |Name|Description|Callback Parameter|
-|:===|:==========|:=================|
+|:---|:----------|:-----------------|
 |documentLoaded|When a document is ready to be shown|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
 |documentClosed|When a document is about to be closed|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
 |unload|When the plugin is about to be unloaded, usually app shutingdown or user uninstalling the plugin|nothing|

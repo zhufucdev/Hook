@@ -3,10 +3,13 @@ using Jint;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 
 namespace Hook.Plugin
 {
@@ -37,9 +40,13 @@ namespace Hook.Plugin
         {
             Engine.SetValue("addEventListener", new Action<string, Jint.Native.JsValue>(J_addEventListener));
             Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView[]>(J_getOpenedDocuments));
+            Engine.SetValue("getRecentDocuments", new Func<IDocument[]>(() => DocumentInfo.RecentDocs.ToArray()));
+            Engine.SetValue("download", new Func<string, string, string>(J_download));
+            Engine.SetValue("openDocument", new Action<string>(J_openDocument));
         }
 
         private event EventHandler Unloaded;
+        #region JS Functions
         private void J_addEventListener(string eventName, Jint.Native.JsValue callback)
         {
             if (callback == null)
@@ -53,17 +60,24 @@ namespace Hook.Plugin
             void wrapCallbackZeroArgument(object sender, object v) =>
                 callback.AsCallable().Call();
 
-
             switch (eventName)
             {
                 case "documentLoaded":
-                    ContentPage.DocumentOpened += (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    EventHandler<DocumentEventArgs> d = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    ContentPage.DocumentOpened += d;
+                    Unloaded += (s, v) => ContentPage.DocumentOpened -= d;
                     break;
                 case "documentClosed":
-                    ContentPage.DocumentClosed += (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    ContentPage.DocumentClosed += d2;
+                    Unloaded += (s, v) => ContentPage.DocumentClosed -= d2;
                     break;
                 case "unload":
                     Unloaded += wrapCallbackZeroArgument;
+                    break;
+                case "systemStartup":
+                    PluginManager.OnStartupTaskRecognized += wrapCallbackZeroArgument;
+                    Unloaded += (s, v) => PluginManager.OnStartupTaskRecognized -= wrapCallbackZeroArgument;
                     break;
                 default:
                     throw new ArgumentException(string.Format("{0} isn't an event name", eventName));
@@ -72,6 +86,68 @@ namespace Hook.Plugin
 
         private JSDocumentView[] J_getOpenedDocuments() => 
             ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key)).ToArray();
+
+        private string J_download(string uri, string rename = null)
+        {
+            async Task<string> download()
+            {
+                var client = new HttpClient();
+                var result = await client.GetAsync(uri);
+                if (!result.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException(string.Format("HTTP: {0}", result.StatusCode));
+                }
+                string name = null;
+                if (!string.IsNullOrWhiteSpace(rename))
+                {
+                    name = rename;
+                }
+                else
+                {
+                    IEnumerable<string> contentDisposition = null;
+
+                    try
+                    {
+                        contentDisposition = result.Content.Headers.GetValues("Content-Disposition");
+                    }
+                    catch
+                    {
+                    }
+
+                    if (contentDisposition != null)
+                    {
+                        name = contentDisposition.FirstOrDefault(v => v.StartsWith("filename="));
+                        if (name != null)
+                        {
+                            var start = name.IndexOf('"');
+                            name = name.Substring(start).Remove(name.Length - 1);
+                        }
+                    }
+                    if (name == null)
+                    {
+                        name = Guid.NewGuid().ToString();
+                    }
+                }
+                var file = await DownloadsFolder.CreateFileAsync(name);
+                using (var fs = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    await result.Content.CopyToAsync(fs.AsStreamForWrite());
+                    await fs.FlushAsync();
+                }
+                StorageApplicationPermissions.FutureAccessList.Add(file);
+                return file.Path;
+            }
+            var task = download();
+            task.Wait();
+            return task.Result;
+        }
+
+        private void J_openDocument(string path)
+        {
+            var document = DocumentInfo.Parse(path);
+            document.Open();
+        }
+        #endregion
 
         public string Name => _name;
 
@@ -84,12 +160,26 @@ namespace Hook.Plugin
         public async void OnLoad()
         {
             var mainFile = await Root.GetFileAsync(PluginEntryFileName);
-            Engine.Execute(await FileIO.ReadTextAsync(mainFile));
+            try
+            {
+                Engine.Execute(await FileIO.ReadTextAsync(mainFile));
+            }
+            catch (Exception ex)
+            {
+                await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => 
+                    App.ShowInfoBar(
+                        Utility.GetResourceString("PlugInFailure/Title").Replace("%s", Name),
+                        string.Format("{0}: {1}", ex.GetType().Name, ex.Message),
+                        Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error
+                    )
+                );
+            }
         }
 
         public void OnUnload()
         {
             Unloaded?.Invoke(this, new EventArgs());
+            Unloaded = null;
         }
 
         public const string PluginManifestFileName = "plugin.json";

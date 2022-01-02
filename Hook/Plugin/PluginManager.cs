@@ -235,20 +235,27 @@ namespace Hook.Plugin
             }
         }
 
+        public static event EventHandler OnStartupTaskRecognized;
+        public static void RecognizeStartupTask()
+        {
+            OnStartupTaskRecognized?.Invoke(MainPage.Instance, new EventArgs());
+        }
+
         private static bool denialInfoShown = false;
-        private static void ShowStartupDenialInfo()
+        private static async void ShowStartupDenialInfo()
         {
             if (denialInfoShown)
             {
                 return;
             }
             denialInfoShown = true;
-
-            App.ShowInfoBar(
+            await MainPage.Instance.Dispatcher.RunAsync(
+                Windows.UI.Core.CoreDispatcherPriority.Low,
+                () => App.ShowInfoBar(
                 title: Utility.GetResourceString("StartupDeny/Title"),
                 message: Utility.GetResourceString("StartupDeny/Message"),
                 severity: Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning
-            );
+            ));
         }
     }
 }

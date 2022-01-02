@@ -81,8 +81,8 @@ namespace Hook
                 {
                     // 当导航堆栈尚未还原时，导航到第一页，
                     // 并通过将所需信息作为导航参数传入来配置
-                    // 参数
-                    if (e is ILaunchActivatedEventArgs)
+                    // 参数，除非手动提供参数
+                    if (param == null && e is ILaunchActivatedEventArgs)
                     {
                         rootFrame.Navigate(typeof(MainPage), (e as ILaunchActivatedEventArgs).Arguments);
                     }
@@ -106,9 +106,20 @@ namespace Hook
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
+        /// <summary>
+        /// Handle: StarupTask
+        /// </summary>
+        /// <param name="args"></param>
         protected override void OnActivated(IActivatedEventArgs args)
         {
-            Launch(args);
+            if (args.Kind == ActivationKind.StartupTask)
+            {
+                Launch(args, PARAM_FROM_STARTUP);
+            }
+            else
+            {
+                Launch(args);
+            }
         }
 
         /// <summary>
@@ -133,7 +144,7 @@ namespace Hook
                 if (file is IStorageFile)
                 {
                     var doc = DocumentInfo.Parse(file as IStorageFile);
-                    MainPage.Instance.OpenDocument(doc);
+                    doc.Open();
                 }
             }
         }
@@ -163,5 +174,6 @@ namespace Hook
         }
 
         public const string PARAM_NO_HOME = "--no-homescreen";
+        public const string PARAM_FROM_STARTUP = "--startup";
     }
 }
