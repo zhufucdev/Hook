@@ -32,7 +32,7 @@ namespace Hook
                 {
                     if (item is StorageFile && PluginManager.SupportedFormats.Contains(Path.GetExtension(item.Path)))
                     {
-                        PluginManager.Install(item as StorageFile);
+                        TryInstall(item as StorageFile);
                     }
                 }
             }
@@ -56,7 +56,27 @@ namespace Hook
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                PluginManager.Uninstall((sender as MenuFlyoutItem).Tag as IPlugin);
+                _ = PluginManager.Uninstall((sender as MenuFlyoutItem).Tag as IPlugin);
+            }
+        }
+
+        private async void TryInstall(StorageFile file)
+        {
+            try
+            {
+                await PluginManager.Install(file);
+            }
+            catch (Exception ex)
+            {
+                var dialog = new ContentDialog()
+                {
+                    Title = Utility.GetResourceString("PlugInInstallationFailure/Title"),
+                    Content = Utility.GetResourceString("PlugInInstallationFailure/Content")
+                                    .Replace("%e%", ex.GetType().Name)
+                                    .Replace("%m", ex.Message),
+                    CloseButtonText = Utility.GetResourceString("CloseButton/Text")
+                };
+                await dialog.ShowAsync();
             }
         }
     }

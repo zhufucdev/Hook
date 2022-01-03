@@ -13,7 +13,7 @@ namespace Hook.API
         string Author { get; }
         string Version { get; }
 
-        void OnLoad();
-        void OnUnload();
+        Task OnLoad();
+        Task OnUnload();
     }
 }

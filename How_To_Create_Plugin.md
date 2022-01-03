@@ -28,7 +28,7 @@ Entry to the plugin where API is available. Shall be executed after Hook starts 
 
 A common practice is to register to the event listener
 ```javascript
-addEventListener("documentOpened", (v) => {
+addEventListener("documentLoaded", (v) => {
     // v is short for DocumentView, a wrapped object from C#
     v.ZoomFactor = 3
 })
@@ -50,6 +50,7 @@ API is a way to communicate with Hook, which can be accessed in the main.js scri
 |documentLoaded|When a document is ready to be shown|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
 |documentClosed|When a document is about to be closed|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
 |unload|When the plugin is about to be unloaded, usually app shutingdown or user uninstalling the plugin|nothing|
+|systemStartup|When the plugin is loaded because of system starting up|nothing|
 
 #### getOpenedDocuments()
 *return:* a read-only array containing each document shown in the tab view

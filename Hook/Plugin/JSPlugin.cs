@@ -23,11 +23,29 @@ namespace Hook.Plugin
 
         public JSPlugin(JObject manifest, StorageFolder root)
         {
-            _name = (string)manifest["name"];
-            _des = (string)manifest["description"];
+            _name = (string)manifest[MANIFEST_KEY_NAME];
+            if (manifest.ContainsKey(MANIFEST_KEY_DESCRIPTION))
+            {
+                _des = (string)manifest["description"];
+            }
+            else
+            {
+                _des = null;
+            }
             _author = (string)manifest["author"];
             _version = (string)manifest["version"];
-            Embedded = ((JArray)manifest["embed"]).Select(c => (string)c).ToArray();
+            if (manifest.ContainsKey(MANIFEST_KEY_EMBED))
+            {
+                var token = manifest[MANIFEST_KEY_EMBED];
+                if (token is JArray)
+                {
+                    Embedded = ((JArray)manifest["embed"]).Select(c => (string)c).ToArray();
+                }
+                else
+                {
+                    Embedded = new string[] { token.ToString() };
+                }
+            }
             Root = root;
 
             Initialize();
@@ -38,11 +56,15 @@ namespace Hook.Plugin
         /// </summary>
         private void Initialize()
         {
+            // function
             Engine.SetValue("addEventListener", new Action<string, Jint.Native.JsValue>(J_addEventListener));
             Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView[]>(J_getOpenedDocuments));
             Engine.SetValue("getRecentDocuments", new Func<IDocument[]>(() => DocumentInfo.RecentDocs.ToArray()));
             Engine.SetValue("download", new Func<string, string, string>(J_download));
             Engine.SetValue("openDocument", new Action<string>(J_openDocument));
+
+            // field
+            Engine.SetValue("window", JSWindow.Instance);
         }
 
         private event EventHandler Unloaded;
@@ -157,32 +179,26 @@ namespace Hook.Plugin
 
         public string Version => _version;
 
-        public async void OnLoad()
+        public async Task OnLoad()
         {
-            var mainFile = await Root.GetFileAsync(PluginEntryFileName);
-            try
-            {
-                Engine.Execute(await FileIO.ReadTextAsync(mainFile));
-            }
-            catch (Exception ex)
-            {
-                await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => 
-                    App.ShowInfoBar(
-                        Utility.GetResourceString("PlugInFailure/Title").Replace("%s", Name),
-                        string.Format("{0}: {1}", ex.GetType().Name, ex.Message),
-                        Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error
-                    )
-                );
-            }
+            var mainFile = await Root.GetFileAsync(PLUGIN_ENTRY_FILE_NAME);
+            Engine.Execute(await FileIO.ReadTextAsync(mainFile));
         }
 
-        public void OnUnload()
+        public async Task OnUnload()
         {
             Unloaded?.Invoke(this, new EventArgs());
             Unloaded = null;
         }
 
-        public const string PluginManifestFileName = "plugin.json";
-        public const string PluginEntryFileName = "main.js";
+        public const string PLUGIN_MANIFEST_FILE_NAME = "plugin.json";
+        public const string PLUGIN_ENTRY_FILE_NAME = "main.js";
+        public const string MANIFEST_KEY_NAME = "name";
+        public const string MANIFEST_KEY_DESCRIPTION = "description";
+        public const string MANIFEST_KEY_AUTHOR = "author";
+        public const string MANIFEST_KEY_VERSION = "version";
+        public const string MANIFEST_KEY_REQUIRE = "require";
+        public const string MANIFEST_KEY_EMBED = "embed";
+        public static string[] NecessaryManifestOptions => new string[] { MANIFEST_KEY_NAME, MANIFEST_KEY_AUTHOR, MANIFEST_KEY_VERSION };
     }
 }

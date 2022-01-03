@@ -177,6 +177,12 @@
   <data name="PlugInHeader.Text" xml:space="preserve">
     <value>管理插件</value>
   </data>
+  <data name="PlugInInstallationFailure.Content" xml:space="preserve">
+    <value>安装程序报告了%e%错误：%m</value>
+  </data>
+  <data name="PlugInInstallationFailure.Title" xml:space="preserve">
+    <value>无法安装此插件</value>
+  </data>
   <data name="PlugInsUIHeader.Text" xml:space="preserve">
     <value>插件</value>
   </data>

@@ -25,14 +25,19 @@ namespace Hook.Plugin
         private static StartupTask startupTask;
         private static async Task<IPlugin> Load(StorageFolder root)
         {
-            var manifestFile = await root.GetFileAsync(JSPlugin.PluginManifestFileName);
+            var manifestFile = await root.GetFileAsync(JSPlugin.PLUGIN_MANIFEST_FILE_NAME);
             var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile));
             var plugin = new JSPlugin(manifest, root);
 
-            if (manifest.ContainsKey("require"))
+            if (manifest.ContainsKey(JSPlugin.MANIFEST_KEY_REQUIRE))
             {
-                var requirements = manifest["require"].Select(v => (string)v);
-                if (requirements.Contains("startWithSystem"))
+                var token = manifest[JSPlugin.MANIFEST_KEY_REQUIRE];
+                var isArray = token is JArray;
+                bool requires(string t) => isArray
+                    && token.Select(v => (string)v).Contains(t)
+                    || token.ToString() == t;
+
+                if (requires("startWithSystem"))
                 {
                     var state = startupTask.State;
                     if (state == StartupTaskState.Disabled)
@@ -51,7 +56,20 @@ namespace Hook.Plugin
                 }
             }
 
-            plugin.OnLoad();
+            try
+            {
+                await plugin.OnLoad();
+            }
+            catch (Exception ex)
+            {
+                await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    App.ShowInfoBar(
+                        Utility.GetResourceString("PlugInFailure/Title").Replace("%s", plugin.Name),
+                        string.Format("{0}: {1}", ex.GetType().Name, ex.Message),
+                        Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error
+                    )
+                );
+            }
             return plugin;
         }
 
@@ -81,7 +99,7 @@ namespace Hook.Plugin
             }
         }
 
-        public static async void Install(StorageFile file)
+        public static async Task Install(StorageFile file)
         {
             Stream stream = await file.OpenStreamForReadAsync();
             // unzip
@@ -94,7 +112,7 @@ namespace Hook.Plugin
                 {
                     directUnzip = true;
                 }
-                if (entry.Name == JSPlugin.PluginManifestFileName)
+                if (entry.Name == JSPlugin.PLUGIN_MANIFEST_FILE_NAME)
                 {
                     manifest = entry.Open();
                     if (directUnzip)
@@ -110,7 +128,12 @@ namespace Hook.Plugin
             }
 
             var manifestJson = JObject.Parse(new StreamReader(manifest).ReadToEnd());
-            string name = (string)manifestJson["name"];
+            if (JSPlugin.NecessaryManifestOptions.Any(v => !manifestJson.ContainsKey(v)))
+            {
+                throw new ArgumentException(string.Format("{0} doesn't contain necessary info in manifest", file.Name));
+            }
+
+            string name = (string)manifestJson[JSPlugin.MANIFEST_KEY_NAME];
 
             async Task<bool> testExisting()
             {
@@ -127,9 +150,9 @@ namespace Hook.Plugin
                     Content = Utility.GetResourceString("ReplacePlugin/Content")
                                     .Replace("%name%", name)
                                     .Replace("%old_author%", oldPlugin.Author)
-                                    .Replace("%new_author%", (string)manifestJson["author"])
+                                    .Replace("%new_author%", (string)manifestJson[JSPlugin.MANIFEST_KEY_AUTHOR])
                                     .Replace("%old_version%", oldPlugin.Version)
-                                    .Replace("%new_version%", (string)manifestJson["version"]),
+                                    .Replace("%new_version%", (string)manifestJson[JSPlugin.MANIFEST_KEY_VERSION]),
                     PrimaryButtonText = Utility.GetResourceString("ReplaceButton/Text"),
                     SecondaryButtonText = Utility.GetResourceString("CloseButton/Text")
                 };
@@ -157,7 +180,7 @@ namespace Hook.Plugin
             {
                 var cache = await ApplicationData.Current.LocalCacheFolder.CreateFolderAsync(name);
                 zip.ExtractToDirectory(cache.Path);
-                async void test(StorageFolder root)
+                async Task test(StorageFolder root)
                 {
                     var s = await root.GetFoldersAsync();
                     var p = await root.GetFilesAsync();
@@ -168,9 +191,19 @@ namespace Hook.Plugin
                         // move it to installation folder
                         foreach (var piece in files)
                         {
+                            string parentOf(string item)
+                            {
+                                var index = item.LastIndexOf('\\');
+                                if (index == -1)
+                                {
+                                    index = 0;
+                                }
+                                return item.Substring(0, index);
+                            }
+
                             async Task<StorageFolder> testParent(string item)
                             {
-                                var suffix = Path.GetRelativePath(item, root.Path);
+                                var suffix = Path.GetRelativePath(item, root.Path).Replace(".", string.Empty);
                                 var full = Path.Combine(Installation.Path, name, suffix);
                                 
                                 try
@@ -179,18 +212,13 @@ namespace Hook.Plugin
                                 }
                                 catch
                                 {
-                                    var index = item.LastIndexOf('\\');
-                                    if (index == -1)
-                                    {
-                                        index = 0;
-                                    }
-                                    var parentPath = item.Substring(0, index);
+                                    var parentPath = parentOf(item);
                                     await (await testParent(parentPath)).CreateFolderAsync(Path.GetDirectoryName(item));
                                     return await StorageFolder.GetFolderFromPathAsync(full);
                                 }
                             }
 
-                            var dest = await testParent((await piece.GetParentAsync()).Path);
+                            var dest = await testParent(parentOf(piece.Path));
 
                             await piece.MoveAsync(dest);
                         }
@@ -201,10 +229,10 @@ namespace Hook.Plugin
                     }
                     if (s.Count == 1 && p.Count == 0)
                     {
-                        test(root);
+                        await test(s.First());
                     }
                 }
-                test(cache);
+                await test(cache);
             }
 
             var plugin = await Load(folder);
