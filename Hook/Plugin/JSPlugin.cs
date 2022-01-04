@@ -16,7 +16,7 @@ namespace Hook.Plugin
     internal class JSPlugin : IPlugin
     {
         private readonly string _name, _des, _author, _version;
-        public readonly string[] Embedded;
+        public readonly string[] Embedded, Requirements;
 
         public readonly Engine Engine = new Engine();
         public readonly StorageFolder Root;
@@ -26,24 +26,36 @@ namespace Hook.Plugin
             _name = (string)manifest[MANIFEST_KEY_NAME];
             if (manifest.ContainsKey(MANIFEST_KEY_DESCRIPTION))
             {
-                _des = (string)manifest["description"];
+                _des = (string)manifest[MANIFEST_KEY_DESCRIPTION];
             }
             else
             {
                 _des = null;
             }
-            _author = (string)manifest["author"];
-            _version = (string)manifest["version"];
+            _author = (string)manifest[MANIFEST_KEY_AUTHOR];
+            _version = (string)manifest[MANIFEST_KEY_VERSION];
             if (manifest.ContainsKey(MANIFEST_KEY_EMBED))
             {
                 var token = manifest[MANIFEST_KEY_EMBED];
                 if (token is JArray)
                 {
-                    Embedded = ((JArray)manifest["embed"]).Select(c => (string)c).ToArray();
+                    Embedded = ((JArray)manifest[MANIFEST_KEY_EMBED]).Select(c => (string)c).ToArray();
                 }
                 else
                 {
                     Embedded = new string[] { token.ToString() };
+                }
+            }
+            if (manifest.ContainsKey(MANIFEST_KEY_REQUIRE))
+            {
+                var token = manifest[MANIFEST_KEY_REQUIRE];
+                if (token is JArray)
+                {
+                    Requirements = ((JArray)manifest[MANIFEST_KEY_REQUIRE]).Select(c => (string)c).ToArray();
+                }
+                else
+                {
+                    Requirements = new string[] { token.ToString() };
                 }
             }
             Root = root;
@@ -98,6 +110,7 @@ namespace Hook.Plugin
                     Unloaded += wrapCallbackZeroArgument;
                     break;
                 case "systemStartup":
+                    CheckRequirement(REQUIRE_STARTUP);
                     PluginManager.OnStartupTaskRecognized += wrapCallbackZeroArgument;
                     Unloaded += (s, v) => PluginManager.OnStartupTaskRecognized -= wrapCallbackZeroArgument;
                     break;
@@ -191,6 +204,14 @@ namespace Hook.Plugin
             Unloaded = null;
         }
 
+        private void CheckRequirement(string key)
+        {
+            if (!Requirements.Contains(key))
+            {
+                throw new InvalidOperationException(string.Format("not requiring {0}", key));
+            }
+        }
+
         public const string PLUGIN_MANIFEST_FILE_NAME = "plugin.json";
         public const string PLUGIN_ENTRY_FILE_NAME = "main.js";
         public const string MANIFEST_KEY_NAME = "name";
@@ -200,5 +221,7 @@ namespace Hook.Plugin
         public const string MANIFEST_KEY_REQUIRE = "require";
         public const string MANIFEST_KEY_EMBED = "embed";
         public static string[] NecessaryManifestOptions => new string[] { MANIFEST_KEY_NAME, MANIFEST_KEY_AUTHOR, MANIFEST_KEY_VERSION };
+
+        public const string REQUIRE_STARTUP = "startWithSystem";
     }
 }

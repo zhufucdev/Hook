@@ -37,7 +37,7 @@ namespace Hook.Plugin
                     && token.Select(v => (string)v).Contains(t)
                     || token.ToString() == t;
 
-                if (requires("startWithSystem"))
+                if (requires(JSPlugin.REQUIRE_STARTUP))
                 {
                     var state = startupTask.State;
                     if (state == StartupTaskState.Disabled)
@@ -179,60 +179,75 @@ namespace Hook.Plugin
             else
             {
                 var cache = await ApplicationData.Current.LocalCacheFolder.CreateFolderAsync(name);
-                zip.ExtractToDirectory(cache.Path);
-                async Task test(StorageFolder root)
+                async Task extractAndMove()
                 {
-                    var s = await root.GetFoldersAsync();
-                    var p = await root.GetFilesAsync();
-                    if (p.Count > 0)
+                    zip.ExtractToDirectory(cache.Path);
+                    async Task test(StorageFolder root)
                     {
-                        // this is the desired root folder
-                        var files = await root.CreateFileQueryWithOptions(new QueryOptions() { FolderDepth = FolderDepth.Deep }).GetFilesAsync();
-                        // move it to installation folder
-                        foreach (var piece in files)
+                        var s = await root.GetFoldersAsync();
+                        var p = await root.GetFilesAsync();
+                        if (p.Count > 0)
                         {
-                            string parentOf(string item)
+                            // this is the desired root folder
+                            var files = await root.CreateFileQueryWithOptions(new QueryOptions() { FolderDepth = FolderDepth.Deep }).GetFilesAsync();
+                            // move it to installation folder
+                            foreach (var piece in files)
                             {
-                                var index = item.LastIndexOf('\\');
-                                if (index == -1)
+                                string parentOf(string item)
                                 {
-                                    index = 0;
+                                    var index = item.LastIndexOf('\\');
+                                    if (index == -1)
+                                    {
+                                        index = 0;
+                                    }
+                                    return item.Substring(0, index);
                                 }
-                                return item.Substring(0, index);
+
+                                async Task<StorageFolder> testParent(string item)
+                                {
+                                    var suffix = Path.GetRelativePath(item, root.Path).Replace(".", string.Empty);
+                                    var full = Path.Combine(Installation.Path, name, suffix);
+
+                                    try
+                                    {
+                                        return await StorageFolder.GetFolderFromPathAsync(full);
+                                    }
+                                    catch
+                                    {
+                                        var parentPath = parentOf(item);
+                                        await (await testParent(parentPath)).CreateFolderAsync(Path.GetDirectoryName(item));
+                                        return await StorageFolder.GetFolderFromPathAsync(full);
+                                    }
+                                }
+
+                                var dest = await testParent(parentOf(piece.Path));
+
+                                await piece.MoveAsync(dest);
                             }
-
-                            async Task<StorageFolder> testParent(string item)
-                            {
-                                var suffix = Path.GetRelativePath(item, root.Path).Replace(".", string.Empty);
-                                var full = Path.Combine(Installation.Path, name, suffix);
-                                
-                                try
-                                {
-                                    return await StorageFolder.GetFolderFromPathAsync(full);
-                                }
-                                catch
-                                {
-                                    var parentPath = parentOf(item);
-                                    await (await testParent(parentPath)).CreateFolderAsync(Path.GetDirectoryName(item));
-                                    return await StorageFolder.GetFolderFromPathAsync(full);
-                                }
-                            }
-
-                            var dest = await testParent(parentOf(piece.Path));
-
-                            await piece.MoveAsync(dest);
                         }
-                    } 
-                    else if (s.Count != 1)
-                    {
-                        throw new ArgumentException(string.Format("{0} is not a plugin structure", file.Name));
+                        else if (s.Count != 1)
+                        {
+                            throw new ArgumentException(string.Format("{0} is not a plugin structure", file.Name));
+                        }
+                        if (s.Count == 1 && p.Count == 0)
+                        {
+                            await test(s.First());
+                        }
                     }
-                    if (s.Count == 1 && p.Count == 0)
-                    {
-                        await test(s.First());
-                    }
+                    await test(cache);
+                    await cache.DeleteAsync();
                 }
-                await test(cache);
+
+                try
+                {
+                    await extractAndMove();
+                }
+                catch (Exception ex)
+                {
+                    await folder.DeleteAsync();
+                    await cache.DeleteAsync();
+                    throw ex;
+                }
             }
 
             var plugin = await Load(folder);
@@ -243,7 +258,7 @@ namespace Hook.Plugin
         {
             if (plugin is JSPlugin)
             {
-                plugin.OnUnload();
+                await plugin.OnUnload();
                 Plugins.Remove(plugin);
 
                 var folder = await Installation.GetFolderAsync(plugin.Name);

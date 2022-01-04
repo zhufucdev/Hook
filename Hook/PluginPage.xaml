@@ -41,7 +41,8 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Text="Plug-ins" Style="{ThemeResource HeaderTextBlockStyle}" x:Uid="PlugInsUIHeader"/>
-            <Grid Grid.Row="1" HorizontalAlignment="Center" AllowDrop="True" Drop="Tip_Drop" DragOver="Tip_DragOver">
+            <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="10"
+                  AllowDrop="True" Drop="Tip_Drop" DragOver="Tip_DragOver">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>

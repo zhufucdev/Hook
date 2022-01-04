@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
+using Windows.UI.Xaml;
 
 namespace Hook.Plugin
 {
@@ -10,11 +11,11 @@ namespace Hook.Plugin
         private ApplicationView _appView = null;
         private JSWindow()
         {
-            MainPage.Instance.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            _ = Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 _window = CoreWindow.GetForCurrentThread();
                 _appView = ApplicationView.GetForCurrentView();
-            }).AsTask().Wait();
+            });
         }
 
         public void Activate() => _window.Activate();

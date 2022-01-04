@@ -48,6 +48,14 @@ namespace Hook
 
         private void Launch(IActivatedEventArgs e, object param = null)
         {
+            _ = PluginManager.Initialize().ContinueWith((task) =>
+            {
+                if (e.Kind == ActivationKind.StartupTask)
+                {
+                    PluginManager.RecognizeStartupTask();
+                }
+            });
+
             Grid rootGrid = Window.Current.Content as Grid;
             Frame rootFrame;
 
@@ -93,6 +101,11 @@ namespace Hook
                 }
                 // 确保当前窗口处于活动状态
                 Window.Current.Activate();
+                
+                if (InfoStack.Count > 0)
+                {
+                    ShowInfoBar(null, null, muxc.InfoBarSeverity.Informational);
+                }
             }
         }
 
@@ -149,14 +162,22 @@ namespace Hook
             }
         }
 
+        private static List<InfoPiece> InfoStack = new List<InfoPiece>();
         public static void ShowInfoBar(string title, string message, muxc.InfoBarSeverity severity)
         {
             var rootGrid = Window.Current.Content as Grid;
             if (rootGrid == null)
             {
-                return;
+                InfoStack.Add(new InfoPiece(title, message, severity));
             }
             var infoBar = rootGrid.FindName("mainInfoBar") as muxc.InfoBar;
+
+            void takeLast()
+            {
+                var info = InfoStack.Last();
+                InfoStack.RemoveAt(InfoStack.Count - 1);
+                ShowInfoBar(info.Title, info.Message, info.Severity);
+            }
             if (infoBar == null)
             {
                 infoBar = new muxc.InfoBar()
@@ -165,12 +186,47 @@ namespace Hook
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(0, 30, 0, 0)
                 };
+                infoBar.Closed += (s, e) =>
+                {
+                    if (InfoStack.Count > 0)
+                    {
+                        // try clearing the info stack
+                        takeLast();
+                    }
+                };
+
                 rootGrid.Children.Add(infoBar);
             }
-            infoBar.Title = title;
-            infoBar.Message = message;
-            infoBar.Severity = severity;
-            infoBar.IsOpen = true;
+            else if (infoBar.IsOpen)
+            {
+                // if a message is being shown
+                // drag it to the stack as next
+                InfoStack.Add(new InfoPiece(infoBar.Title, infoBar.Message, infoBar.Severity));
+            }
+            if (title == null)
+            {
+                // take the last info in stack
+                takeLast();
+            }
+            else
+            {
+                infoBar.Title = title;
+                infoBar.Message = message;
+                infoBar.Severity = severity;
+                infoBar.IsOpen = true;
+            }
+        }
+
+        private class InfoPiece {
+            public readonly string Title;
+            public readonly string Message;
+            public readonly muxc.InfoBarSeverity Severity;
+            public InfoPiece(string title, string message, muxc.InfoBarSeverity severity)
+            {
+                Title = title;
+                Message = message;
+                Severity = severity;
+            }
         }
 
         public const string PARAM_NO_HOME = "--no-homescreen";

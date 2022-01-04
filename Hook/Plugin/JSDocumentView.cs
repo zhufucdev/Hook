@@ -22,7 +22,7 @@ namespace Hook.Plugin
         /// <param name="name">name of the js file</param>
         /// <param name="functionName">name of the function in that file to call</param>
         /// <param name="arguments">arguments of the evluation</param>
-        public async Task<string> RunScript(string name, string functionName, string arguments)
+        public async Task<string> RunEmbedded(string name, string functionName = null, string arguments = null)
         {
             var scriptFile = await plugin.Root.GetFileAsync(name + ".js");
             var content = await FileIO.ReadTextAsync(scriptFile);

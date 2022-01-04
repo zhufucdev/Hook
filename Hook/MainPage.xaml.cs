@@ -200,7 +200,7 @@ namespace Hook
             }
             #endregion
             #region Plugins
-            await Task.Run(PluginManager.Initialize);
+            //await Task.Run(PluginManager.Initialize);
             
             #endregion
         }
@@ -226,10 +226,6 @@ namespace Hook
             if (addHome)
             {
                 AddHomeScreen();
-            }
-            if (startupTask)
-            {
-                PluginManager.RecognizeStartupTask();
             }
         }
     }
