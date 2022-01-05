@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Core;
@@ -48,14 +49,6 @@ namespace Hook
 
         private void Launch(IActivatedEventArgs e, object param = null)
         {
-            _ = PluginManager.Initialize().ContinueWith((task) =>
-            {
-                if (e.Kind == ActivationKind.StartupTask)
-                {
-                    PluginManager.RecognizeStartupTask();
-                }
-            });
-
             Grid rootGrid = Window.Current.Content as Grid;
             Frame rootFrame;
 
@@ -99,6 +92,7 @@ namespace Hook
                         rootFrame.Navigate(typeof(MainPage), param);
                     }
                 }
+                LoadSettings(e).Wait();
                 // 确保当前窗口处于活动状态
                 Window.Current.Activate();
                 
@@ -107,6 +101,50 @@ namespace Hook
                     ShowInfoBar(null, null, muxc.InfoBarSeverity.Informational);
                 }
             }
+        }
+
+        private async Task LoadSettings(IActivatedEventArgs e)
+        {
+            #region Converters
+            var builtin = new DefaultDocumentConvert();
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
+            Utility.AvailableConverters.Add(builtin);
+
+            // setup default converter
+            if (roamingSettings.Values.ContainsKey("DefaultConverter"))
+            {
+                Utility.DefaultConverter =
+                    Utility.AvailableConverters.FirstOrDefault
+                    (converter => converter.ID.ToString() == roamingSettings.Values["DefaultConverter"].ToString());
+                if (Utility.DefaultConverter == null)
+                {
+                    await new ContentDialog()
+                    {
+                        Title = Utility.GetResourceString("ConverterNotFound/Title"),
+                        Content = Utility.GetResourceString("ConverterNotFound/Content"),
+                        CloseButtonText = Utility.GetResourceString("CloseButton/Text")
+                    }.ShowAsync();
+                    Utility.DefaultConverter = builtin;
+                }
+            }
+            else
+            {
+                Utility.DefaultConverter = builtin;
+                roamingSettings.Values["DefaultConverter"] = builtin.ID.ToString();
+            }
+            #endregion
+            DocumentInfo.LoadFromDisk();
+
+            #region Plugins
+            _ = PluginManager.Initialize().ContinueWith((task) =>
+            {
+                if (e.Kind == ActivationKind.StartupTask)
+                {
+                    PluginManager.RecognizeStartupTask();
+                }
+            });
+
+            #endregion
         }
 
         /// <summary>

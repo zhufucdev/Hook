@@ -31,10 +31,7 @@ namespace Hook
 
             Window.Current.SetTitleBar(CustomDragRegion);
 
-            DocumentInfo.LoadFromDisk();
-
             Instance = this;
-            LoadSettings();
         }
 
         private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
@@ -167,42 +164,6 @@ namespace Hook
                 TabView.TabItems.Add(newTab);
             }
             TabView.SelectedItem = search;
-        }
-
-        private async void LoadSettings()
-        {
-            #region Converters
-            var builtin = new DefaultDocumentConvert();
-            var roamingSettings = ApplicationData.Current.RoamingSettings;
-            Utility.AvailableConverters.Add(builtin);
-
-            // setup default converter
-            if (roamingSettings.Values.ContainsKey("DefaultConverter"))
-            {
-                Utility.DefaultConverter = 
-                    Utility.AvailableConverters.FirstOrDefault
-                    (converter => converter.ID.ToString() == roamingSettings.Values["DefaultConverter"].ToString());
-                if (Utility.DefaultConverter == null)
-                {
-                    await new ContentDialog()
-                    {
-                        Title = Utility.GetResourceString("ConverterNotFound/Title"),
-                        Content = Utility.GetResourceString("ConverterNotFound/Content"),
-                        CloseButtonText = Utility.GetResourceString("CloseButton/Text")
-                    }.ShowAsync();
-                    Utility.DefaultConverter = builtin;
-                }
-            }
-            else
-            {
-                Utility.DefaultConverter = builtin;
-                roamingSettings.Values["DefaultConverter"] = builtin.ID.ToString();
-            }
-            #endregion
-            #region Plugins
-            //await Task.Run(PluginManager.Initialize);
-            
-            #endregion
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
