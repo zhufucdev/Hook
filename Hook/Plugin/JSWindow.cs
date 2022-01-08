@@ -11,30 +11,20 @@ namespace Hook.Plugin
         private ApplicationView _appView = null;
         private JSWindow()
         {
-            
+            _ = Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                _window = CoreWindow.GetForCurrentThread();
+                _appView = ApplicationView.GetForCurrentView();
+            });
         }
 
         public void Activate()
         {
-            if (_window == null)
-            {
-                Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.High, () =>
-                {
-                    _window = CoreWindow.GetForCurrentThread();
-                }).AsTask().Wait();
-            }
-            _window.Activate();
+            _window?.Activate();
         }
         public void TryEnterFullscreen()
         {
-            if (_appView == null)
-            {
-                Window.Current.Dispatcher.RunAsync(CoreDispatcherPriority.High, () =>
-                {
-                    _appView = ApplicationView.GetForCurrentView();
-                }).AsTask().Wait();
-            }
-            _appView.TryEnterFullScreenMode();
+            _appView?.TryEnterFullScreenMode();
         }
 
         public static JSWindow Instance = new JSWindow();

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Security.Cryptography;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 
@@ -72,7 +73,7 @@ namespace Hook.Plugin
             Engine.SetValue("addEventListener", new Action<string, Jint.Native.JsValue>(J_addEventListener));
             Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView[]>(J_getOpenedDocuments));
             Engine.SetValue("getRecentDocuments", new Func<IDocument[]>(() => DocumentInfo.RecentDocs.ToArray()));
-            Engine.SetValue("download", new Func<string, string, string>(J_download));
+            Engine.SetValue("download", new Action<string, Jint.Native.JsValue, Jint.Native.JsValue>(J_download));
             Engine.SetValue("openDocument", new Action<string>(J_openDocument));
 
             // field
@@ -122,8 +123,28 @@ namespace Hook.Plugin
         private JSDocumentView[] J_getOpenedDocuments() => 
             ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key)).ToArray();
 
-        private string J_download(string uri, string rename = null)
+        private void J_download(string uri, Jint.Native.JsValue rename = null, Jint.Native.JsValue callback = null)
         {
+            string mRename = null;
+            Jint.Native.ICallable mCallback = null;
+            if (rename != null && rename.IsCallable())
+            {
+                mCallback = rename.AsCallable();
+                mRename = null;
+            }
+            else if (rename != null && rename.IsString())
+            {
+                if (callback.IsCallable())
+                {
+                    mCallback = callback?.AsCallable();
+                }
+                else
+                {
+                    mCallback = null;
+                }
+                mRename = rename.AsString();
+            }
+
             async Task<string> download()
             {
                 var client = new HttpClient();
@@ -133,9 +154,9 @@ namespace Hook.Plugin
                     throw new InvalidOperationException(string.Format("HTTP: {0}", result.StatusCode));
                 }
                 string name = null;
-                if (!string.IsNullOrWhiteSpace(rename))
+                if (!string.IsNullOrWhiteSpace(mRename))
                 {
-                    name = rename;
+                    name = mRename;
                 }
                 else
                 {
@@ -151,10 +172,11 @@ namespace Hook.Plugin
 
                     if (contentDisposition != null)
                     {
-                        name = contentDisposition.FirstOrDefault(v => v.StartsWith("filename="));
+                        var fileNamePrefix = "filename=";
+                        name = contentDisposition.FirstOrDefault(v => v.Contains(fileNamePrefix));
                         if (name != null)
                         {
-                            var start = name.IndexOf('"');
+                            var start = name.IndexOf(fileNamePrefix) + fileNamePrefix.Length + 1;
                             name = name.Substring(start).Remove(name.Length - 1);
                         }
                     }
@@ -166,15 +188,17 @@ namespace Hook.Plugin
                 var file = await DownloadsFolder.CreateFileAsync(name);
                 using (var fs = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    await result.Content.CopyToAsync(fs.AsStreamForWrite());
-                    await fs.FlushAsync();
+                    var bf = await result.Content.ReadAsByteArrayAsync();
+                    await fs.WriteAsync(CryptographicBuffer.CreateFromByteArray(bf));
                 }
                 StorageApplicationPermissions.FutureAccessList.Add(file);
                 return file.Path;
             }
-            var task = download();
-            task.Wait();
-            return task.Result;
+            Task.Run(async () =>
+            {
+                var path = await download();
+                mCallback?.Call(new Jint.Native.JsValue[] { Jint.Native.JsValue.FromObject(Engine, path) });
+            });
         }
 
         private void J_openDocument(string path)
