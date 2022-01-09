@@ -157,6 +157,7 @@
     <Compile Include="Plugin\JSDocumentView.cs" />
     <Compile Include="Plugin\JSPlugin.cs" />
     <Compile Include="Plugin\JSWindow.cs" />
+    <Compile Include="Plugin\PluginEventCollection.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
     <Compile Include="Plugin\SimpleDocumentView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

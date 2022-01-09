@@ -61,14 +61,31 @@ namespace Hook
             }
 
             WebView.Source = new Uri("file://" + cache.Path);
-            ConvertingLayout.Visibility = Visibility.Collapsed;
 
             OpenedDocument[doc] = WebView;
             Current = doc;
-            await WebView.EnsureCoreWebView2Async();
-            // somehow, an interval is a must
-            await Task.Delay(200);
-            DocumentOpened?.Invoke(this, new DocumentEventArgs(WebView, Current));
+            if (PluginManager.Plugins.Count > 0)
+            {
+                ConverterHeader.Text = Utility.GetResourceString("PlugInLoadHeader/Text");
+                await WebView.EnsureCoreWebView2Async();
+                var args = new DocumentEventArgs(WebView, Current);
+                DocumentOpened?.Invoke(this, args);
+                // somehow, an interval is a must
+                await Task.Delay(500);
+                PluginManager.UseWithDependency(p =>
+                {
+                    if (DocumentOpenedForPlugin.ContainsKey(p))
+                    {
+                        var handlers = DocumentOpenedForPlugin[p];
+                        foreach (var action in handlers)
+                        {
+                            action(args);
+                        }
+                    }
+                });
+                ConvertingLayout.Visibility = Visibility.Collapsed;
+            }
+            
         }
 
         public void Close()
@@ -78,6 +95,23 @@ namespace Hook
         }
 
         public static event EventHandler<DocumentEventArgs> DocumentOpened;
+        public static PluginEventCollection<DocumentEventArgs> DocumentOpenedForPlugin
+            = new PluginEventCollection<DocumentEventArgs>();
         public static event EventHandler<DocumentEventArgs> DocumentClosed;
+
+        public static void RegisterFor<T>(IPlugin plugin, PluginEventCollection<T> e, Action<T> action)
+        {
+            List<Action<T>> handlers;
+            if (!e.ContainsKey(plugin))
+            {
+                handlers = new List<Action<T>>();
+                e[plugin] = handlers;
+            }
+            else
+            {
+                handlers = e[plugin];
+            }
+            handlers.Add(action);
+        }
     }
 }

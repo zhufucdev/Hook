@@ -3,6 +3,7 @@ using Jint;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -17,7 +18,7 @@ namespace Hook.Plugin
     internal class JSPlugin : IPlugin
     {
         private readonly string _name, _des, _author, _version;
-        public readonly string[] Embedded, Requirements;
+        public readonly string[] Embedded, _require = new string[0], _depend = new string[0];
 
         public readonly Engine Engine = new Engine();
         public readonly StorageFolder Root;
@@ -49,19 +50,27 @@ namespace Hook.Plugin
             }
             if (manifest.ContainsKey(MANIFEST_KEY_REQUIRE))
             {
-                var token = manifest[MANIFEST_KEY_REQUIRE];
-                if (token is JArray)
-                {
-                    Requirements = ((JArray)manifest[MANIFEST_KEY_REQUIRE]).Select(c => (string)c).ToArray();
-                }
-                else
-                {
-                    Requirements = new string[] { token.ToString() };
-                }
+                _require = arrayOrString(manifest[MANIFEST_KEY_REQUIRE]);
+            }
+            if (manifest.ContainsKey(MANIFEST_KEY_DEPENDENCY))
+            {
+                _depend = arrayOrString(manifest[MANIFEST_KEY_DEPENDENCY]);
             }
             Root = root;
 
             Initialize();
+        }
+
+        private string[] arrayOrString(JToken token)
+        {
+            if (token is JArray)
+            {
+                return ((JArray)token).Select(c => (string)c).ToArray();
+            }
+            else
+            {
+                return new string[] { token.ToString() };
+            }
         }
 
         /// <summary>
@@ -98,9 +107,9 @@ namespace Hook.Plugin
             switch (eventName)
             {
                 case "documentLoaded":
-                    EventHandler<DocumentEventArgs> d = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
-                    ContentPage.DocumentOpened += d;
-                    Unloaded += (s, v) => ContentPage.DocumentOpened -= d;
+                    Action<DocumentEventArgs> d = (v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    ContentPage.RegisterFor(this, ContentPage.DocumentOpenedForPlugin, d);
+                    Unloaded += (s, v) => ContentPage.DocumentOpenedForPlugin.Remove(this);
                     break;
                 case "documentClosed":
                     EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
@@ -185,7 +194,7 @@ namespace Hook.Plugin
                         name = Guid.NewGuid().ToString();
                     }
                 }
-                var file = await DownloadsFolder.CreateFileAsync(name);
+                var file = await DownloadsFolder.CreateFileAsync(name, CreationCollisionOption.GenerateUniqueName);
                 using (var fs = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
                     var bf = await result.Content.ReadAsByteArrayAsync();
@@ -208,29 +217,44 @@ namespace Hook.Plugin
         }
         #endregion
 
-        public string Name => _name;
+        public override string Name => _name;
 
-        public string Description => _des;
+        public override string Description => _des;
 
-        public string Author => _author;
+        public override string Author => _author;
 
-        public string Version => _version;
+        public override string Version => _version;
 
-        public async Task OnLoad()
+        public override string[] Requirements => _require;
+
+        public override IPlugin[] Dependencies => _depend.Select(p => PluginManager.Find(p) ?? throw new ArgumentNullException()).ToArray();
+
+        public override async Task OnLoad()
         {
+            if (Loaded)
+            {
+                return;
+            }
             var mainFile = await Root.GetFileAsync(PLUGIN_ENTRY_FILE_NAME);
             Engine.Execute(await FileIO.ReadTextAsync(mainFile));
+
+            Loaded = true;
         }
 
-        public async Task OnUnload()
+        public override async Task OnUnload()
         {
+            if (!Loaded)
+            {
+                return;
+            }
             Unloaded?.Invoke(this, new EventArgs());
             Unloaded = null;
+            Loaded = false;
         }
 
         private void CheckRequirement(string key)
         {
-            if (!Requirements.Contains(key))
+            if (!_require.Contains(key))
             {
                 throw new InvalidOperationException(string.Format("not requiring {0}", key));
             }
@@ -244,8 +268,7 @@ namespace Hook.Plugin
         public const string MANIFEST_KEY_VERSION = "version";
         public const string MANIFEST_KEY_REQUIRE = "require";
         public const string MANIFEST_KEY_EMBED = "embed";
+        public const string MANIFEST_KEY_DEPENDENCY = "dependsOn";
         public static string[] NecessaryManifestOptions => new string[] { MANIFEST_KEY_NAME, MANIFEST_KEY_AUTHOR, MANIFEST_KEY_VERSION };
-
-        public const string REQUIRE_STARTUP = "startWithSystem";
     }
 }

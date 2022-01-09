@@ -23,7 +23,7 @@ namespace Hook.Plugin
         public static readonly string[] SupportedFormats = { ".hplugin" };
 
         private static StartupTask startupTask;
-        private static async Task<IPlugin> Load(StorageFolder root)
+        private static async Task<IPlugin> CreateInstance(StorageFolder root)
         {
             var manifestFile = await root.GetFileAsync(JSPlugin.PLUGIN_MANIFEST_FILE_NAME);
             var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile));
@@ -37,7 +37,7 @@ namespace Hook.Plugin
                     && token.Select(v => (string)v).Contains(t)
                     || token.ToString() == t;
 
-                if (requires(JSPlugin.REQUIRE_STARTUP))
+                if (requires(IPlugin.REQUIRE_STARTUP))
                 {
                     var state = startupTask.State;
                     if (state == StartupTaskState.Disabled)
@@ -56,6 +56,45 @@ namespace Hook.Plugin
                 }
             }
 
+            return plugin;
+        }
+
+        private static async Task Load(IPlugin plugin)
+        {
+            var notLoaded = "";
+            try
+            {
+                foreach (var p in plugin.Dependencies)
+                {
+                    if (!p.Loaded)
+                    {
+                        notLoaded += p.Name + ", ";
+                    }
+                }
+            }
+            catch (ArgumentNullException)
+            {
+                if (plugin is JSPlugin)
+                {
+                    foreach (var name in (plugin as JSPlugin)._depend)
+                    {
+                        notLoaded += name + ", ";
+                    }
+                }
+                else
+                {
+                    notLoaded = "?";
+                }
+            }
+            if (!string.IsNullOrEmpty(notLoaded))
+            {
+                notLoaded = notLoaded.Remove(notLoaded.Length - 2);
+                App.ShowInfoBar(
+                    Utility.GetResourceString("PlugInLoadDependNotFound/Title"), 
+                    Utility.GetResourceString("PlugInLoadDependNotFound/Message").Replace("%s%", plugin.Name).Replace("%d%", notLoaded),
+                    Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
+                return;
+            }
             try
             {
                 await plugin.OnLoad();
@@ -70,7 +109,6 @@ namespace Hook.Plugin
                     )
                 );
             }
-            return plugin;
         }
 
         public static async Task Initialize()
@@ -94,9 +132,11 @@ namespace Hook.Plugin
             var plugins = await Installation.GetFoldersAsync();
             foreach (var plugin in plugins)
             {
-                var instance = await Load(plugin);
+                var instance = await CreateInstance(plugin);
                 Plugins.Add(instance);
             }
+
+            LoadAll();
         }
 
         public static async Task Install(StorageFile file)
@@ -250,8 +290,9 @@ namespace Hook.Plugin
                 }
             }
 
-            var plugin = await Load(folder);
+            var plugin = await CreateInstance(folder);
             Plugins.Add(plugin);
+            await Load(plugin);
         }
 
         public static async Task Uninstall(IPlugin plugin)
@@ -274,9 +315,90 @@ namespace Hook.Plugin
         {
             foreach (var plugin in Plugins)
             {
-                plugin.OnUnload();
+                plugin.OnUnload().Wait();
             }
         }
+
+        public static void UseWithDependency(Action<IPlugin> action, bool useCache = true)
+        {
+            void useRecursively(PluginDependency relation)
+            {
+                action(relation.Parent);
+                foreach (var d in relation.Children)
+                {
+                    var resurse = PluginDependency.Instances.ContainsKey(d);
+                    if (resurse)
+                    {
+                        useRecursively(PluginDependency.Instances[d]);
+                    }
+                    else
+                    {
+                        action(d);
+                    }
+                }
+            }
+            List<IPlugin> rootPlugins; // plugins that should be loaded first
+            EnsureDependencyStructure(useCache, out rootPlugins);
+
+            foreach (var plugin in rootPlugins)
+            {
+                var relation = PluginDependency.Parse(plugin);
+                useRecursively(relation);
+            }
+        }
+
+        private static void EnsureDependencyStructure(bool useCache, out List<IPlugin> rootPlugins)
+        {
+            if (!useCache && PluginDependency.IsRelationStructureBuilt)
+            {
+                PluginDependency.Instances.Clear();
+            }
+
+            rootPlugins = new List<IPlugin>();
+            foreach (var plugin in Plugins)
+            {
+                IPlugin[] dependsOn = Array.Empty<IPlugin>();
+                try
+                {
+                    dependsOn = plugin.Dependencies;
+                }
+                catch (ArgumentNullException)
+                {
+                }
+                if (dependsOn.Count() > 0)
+                {
+                    if (!PluginDependency.IsRelationStructureBuilt)
+                    {
+                        foreach (var depeneded in dependsOn)
+                        {
+                            var relation = PluginDependency.Parse(depeneded);
+                            relation.Children.Add(plugin);
+                        }
+                    }
+                }
+                else
+                {
+                    rootPlugins.Add(plugin);
+                }
+            }
+            PluginDependency.IsRelationStructureBuilt = true;
+        }
+
+        public static void LoadAll(bool useCache = true)
+        {
+            Task lastTask = null;
+            UseWithDependency(p => {
+                if (lastTask != null)
+                {
+                    lastTask.ContinueWith(t => Load(p));
+                }
+                else {
+                    lastTask = Load(p);
+                }
+            }, useCache);
+        }
+
+        public static IPlugin Find(string name) => Plugins.FirstOrDefault(x => x.Name == name);
 
         public static event EventHandler OnStartupTaskRecognized;
         public static void RecognizeStartupTask()
@@ -299,6 +421,34 @@ namespace Hook.Plugin
                 message: Utility.GetResourceString("StartupDeny/Message"),
                 severity: Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning
             ));
+        }
+
+        class PluginDependency
+        {
+            public IPlugin Parent;
+            public List<IPlugin> Children;
+
+            private PluginDependency(IPlugin parent)
+            {
+                Parent = parent;
+                Children = new List<IPlugin>();
+            }
+
+            public static readonly Dictionary<IPlugin, PluginDependency> Instances = new Dictionary<IPlugin, PluginDependency>();
+            public static bool IsRelationStructureBuilt = false;
+            public static PluginDependency Parse(IPlugin depended)
+            {
+                if (Instances.ContainsKey(depended))
+                {
+                    return Instances[depended];
+                }
+                else
+                {
+                    var d = new PluginDependency(depended);
+                    Instances[depended] = d;
+                    return d;
+                }
+            }
         }
     }
 }

@@ -6,14 +6,20 @@ using System.Threading.Tasks;
 
 namespace Hook.API
 {
-    public interface IPlugin
+    public abstract class IPlugin
     {
-        string Name { get; }
-        string Description { get; }
-        string Author { get; }
-        string Version { get; }
+        public abstract string Name { get; }
+        public abstract string Description { get; }
+        public abstract string Author { get; }
+        public abstract string Version { get; }
+        public abstract IPlugin[] Dependencies { get; }
+        public abstract string[] Requirements { get; }
 
-        Task OnLoad();
-        Task OnUnload();
+        public bool Loaded { protected set; get; }
+
+        public abstract Task OnLoad();
+        public abstract Task OnUnload();
+
+        public const string REQUIRE_STARTUP = "startWithSystem";
     }
 }

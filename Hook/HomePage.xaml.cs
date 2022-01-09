@@ -77,7 +77,7 @@ namespace Hook
             {
                 await new ContentDialog()
                 {
-                    Title = Utility.GetResourceString("ErrorOpen.Title"),
+                    Title = Utility.GetResourceString("ErrorOpen/Title"),
                     Content = ex.Message,
                     CloseButtonText = Utility.GetResourceString("CloseButton/Text")
                 }.ShowAsync();
