@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.Security.Cryptography;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace Hook.Plugin
 {
@@ -84,6 +85,8 @@ namespace Hook.Plugin
             Engine.SetValue("getRecentDocuments", new Func<IDocument[]>(() => DocumentInfo.RecentDocs.ToArray()));
             Engine.SetValue("download", new Action<string, Jint.Native.JsValue, Jint.Native.JsValue>(J_download));
             Engine.SetValue("openDocument", new Action<string>(J_openDocument));
+            Engine.SetValue("writeline", new Action<object>(J_writeline));
+            Engine.SetValue("showInfoBar", new Action<string, string, string>(J_showInfoBar));
 
             // field
             Engine.SetValue("window", JSWindow.Instance);
@@ -214,6 +217,25 @@ namespace Hook.Plugin
         {
             var document = DocumentInfo.Parse(path);
             document.Open();
+        }
+
+        private void J_writeline(object content) => Debug.WriteLine(content);
+        private void J_showInfoBar(string title, string message, string severity = "")
+        {
+            var severityEnum = muxc.InfoBarSeverity.Informational;
+            switch (severity)
+            {
+                case "error":
+                    severityEnum = muxc.InfoBarSeverity.Error;
+                    break;
+                case "warning":
+                    severityEnum = muxc.InfoBarSeverity.Warning;
+                    break;
+                case "success":
+                    severityEnum = muxc.InfoBarSeverity.Success;
+                    break;
+            }
+            App.ShowInfoBar(title, message, severityEnum);
         }
         #endregion
 

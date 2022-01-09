@@ -27,6 +27,7 @@ namespace Hook.Plugin
         }
 
         public Uri Source => webView.Source;
+        public string Path => doc.Path;
 
         public void Close()
         {
