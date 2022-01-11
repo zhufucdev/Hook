@@ -315,7 +315,13 @@ namespace Hook.Plugin
         {
             foreach (var plugin in Plugins)
             {
-                plugin.OnUnload().Wait();
+                try
+                {
+                    plugin.OnUnload().Wait();
+                }
+                catch
+                {
+                }
             }
         }
 

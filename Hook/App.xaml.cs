@@ -35,6 +35,7 @@ namespace Hook
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.Resuming += App_Resuming;
         }
 
         /// <summary>
@@ -63,12 +64,6 @@ namespace Hook
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
-                {
-                    //TODO: 从之前挂起的应用程序加载状态
-                    PluginManager.LoadAll(false);
-                }
-
                 // 将框架放在当前窗口中
                 Window.Current.Content = rootGrid;
             }
@@ -93,7 +88,6 @@ namespace Hook
                         rootFrame.Navigate(typeof(MainPage), param);
                     }
                 }
-                LoadSettings(e).Wait();
                 // 确保当前窗口处于活动状态
                 Window.Current.Activate();
                 
@@ -102,10 +96,17 @@ namespace Hook
                     ShowInfoBar(null, null, muxc.InfoBarSeverity.Informational);
                 }
             }
+            LoadSettings(e).Wait();
         }
 
+        private bool SettingsLoaded = false;
         private async Task LoadSettings(IActivatedEventArgs e)
         {
+            if (SettingsLoaded)
+            {
+                return;
+            }
+
             #region Converters
             var builtin = new DefaultDocumentConvert();
             var roamingSettings = ApplicationData.Current.RoamingSettings;
@@ -146,6 +147,7 @@ namespace Hook
             });
 
             #endregion
+            SettingsLoaded = true;
         }
 
         /// <summary>
@@ -187,6 +189,11 @@ namespace Hook
             //TODO: 保存应用程序状态并停止任何后台活动
             PluginManager.UnloadAll();
             deferral.Complete();
+        }
+
+        private void App_Resuming(object sender, object e)
+        {
+            PluginManager.LoadAll();
         }
 
         protected override void OnFileActivated(FileActivatedEventArgs args)

@@ -54,3 +54,7 @@ API is a way to communicate with Hook, which can be accessed in the main.js scri
 
 #### getOpenedDocuments()
 *return:* a read-only array containing each document shown in the tab view
+
+#### getRecentDocuments()
+*return:* a read-only array containing each document touched recently, sorted from most recent to least
+####

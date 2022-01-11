@@ -135,6 +135,7 @@ namespace Hook.Plugin
         private JSDocumentView[] J_getOpenedDocuments() => 
             ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key)).ToArray();
 
+        private List<HttpClient> downloadClients = new List<HttpClient>();
         private void J_download(string uri, Jint.Native.JsValue rename = null, Jint.Native.JsValue callback = null)
         {
             string mRename = null;
@@ -160,6 +161,7 @@ namespace Hook.Plugin
             async Task<string> download()
             {
                 var client = new HttpClient();
+                downloadClients.Add(client);
                 var result = await client.GetAsync(uri);
                 if (!result.IsSuccessStatusCode)
                 {
@@ -199,10 +201,13 @@ namespace Hook.Plugin
                 }
                 var file = await DownloadsFolder.CreateFileAsync(name, CreationCollisionOption.GenerateUniqueName);
                 using (var fs = await file.OpenAsync(FileAccessMode.ReadWrite))
+                using(result)
+                using(client)
                 {
                     var bf = await result.Content.ReadAsByteArrayAsync();
                     await fs.WriteAsync(CryptographicBuffer.CreateFromByteArray(bf));
                 }
+                downloadClients.Remove(client);
                 StorageApplicationPermissions.FutureAccessList.Add(file);
                 return file.Path;
             }
@@ -269,9 +274,21 @@ namespace Hook.Plugin
             {
                 return;
             }
+            Loaded = false;
             Unloaded?.Invoke(this, new EventArgs());
             Unloaded = null;
-            Loaded = false;
+            // cancel downloading tasks
+            foreach (var download in downloadClients)
+            {
+                try
+                {
+                    download.CancelPendingRequests();
+                    download.Dispose();
+                }
+                catch
+                {
+                }
+            }
         }
 
         private void CheckRequirement(string key)
