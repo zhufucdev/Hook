@@ -23,7 +23,7 @@ namespace Hook.Plugin
         public static readonly string[] SupportedFormats = { ".hplugin" };
 
         private static StartupTask startupTask;
-        private static async Task<IPlugin> CreateInstance(StorageFolder root)
+        private static async Task<IPlugin> CreateInstance(StorageFolder root, bool sideload = false)
         {
             var manifestFile = await root.TryGetItemAsync(JSPlugin.PLUGIN_MANIFEST_FILE_NAME);
             if (manifestFile == null || !(manifestFile is IStorageFile))
@@ -32,7 +32,7 @@ namespace Hook.Plugin
             }
 
             var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile as IStorageFile));
-            var plugin = new JSPlugin(manifest, root);
+            var plugin = sideload ? new SideloadedJSPlugin(manifest, root) : new JSPlugin(manifest, root);
 
             if (manifest.ContainsKey(JSPlugin.MANIFEST_KEY_REQUIRE))
             {
@@ -64,7 +64,7 @@ namespace Hook.Plugin
             return plugin;
         }
 
-        private static async Task Load(IPlugin plugin)
+        public static async Task Load(IPlugin plugin)
         {
             var notLoaded = "";
             try
@@ -157,7 +157,7 @@ namespace Hook.Plugin
                         sideloaders.Remove(sideload);
                         continue;
                     }
-                    var instance = await CreateInstance(folder);
+                    var instance = await CreateInstance(folder, sideload: true);
                     Plugins.Add(instance);
                 }
                 if (Utility.Sideloaders.Count() > sideloaders.Count)
@@ -332,7 +332,7 @@ namespace Hook.Plugin
                 return;
             }
             
-            var plugin = await CreateInstance(folder);
+            var plugin = await CreateInstance(folder, sideload: true);
             Plugins.Add(plugin);
             await Load(plugin);
 

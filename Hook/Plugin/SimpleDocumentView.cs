@@ -16,16 +16,15 @@ namespace Hook.Plugin
             this.doc = doc;
         }
 
+        private double _zoom = 1;
         public double ZoomFactor
         {
-            get
+            get => _zoom;
+            set
             {
-                var task = RunScript("document.body.style.zoom");
-                task.Wait();
-                int.TryParse(task.Result, out int factor);
-                return factor;
+                _zoom = value;
+                _ = RunScript(string.Format("document.body.style.zoom = {0}", value));
             }
-            set => _ = RunScript(string.Format("document.body.style.zoom = {0}", value));
         }
 
         public Uri Source => webView.Source;

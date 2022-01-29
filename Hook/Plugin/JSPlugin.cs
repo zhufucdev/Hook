@@ -252,7 +252,8 @@ namespace Hook.Plugin
                     severityEnum = muxc.InfoBarSeverity.Success;
                     break;
             }
-            App.ShowInfoBar(title, message, severityEnum);
+            _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, 
+                () => App.ShowInfoBar(title, message, severityEnum));
         }
         #endregion
 

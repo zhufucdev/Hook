@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using muxc = Microsoft.UI.Xaml.Controls;
 
@@ -217,6 +219,7 @@ namespace Hook
             }
             if (infoBar == null)
             {
+                var uiSettings = new UISettings();
                 infoBar = new muxc.InfoBar()
                 {
                     Name = "mainInfoBar",

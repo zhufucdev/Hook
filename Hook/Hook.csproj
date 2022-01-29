@@ -162,6 +162,7 @@
     <Compile Include="Plugin\JSWindow.cs" />
     <Compile Include="Plugin\PluginEventCollection.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
+    <Compile Include="Plugin\SideloadedJSPlugin.cs" />
     <Compile Include="Plugin\SimpleDocumentView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HomePage.xaml.cs">
