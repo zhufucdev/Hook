@@ -40,7 +40,12 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="Plug-ins" Style="{ThemeResource HeaderTextBlockStyle}" x:Uid="PlugInsUIHeader"/>
+            <RelativePanel>
+                <TextBlock Text="Plug-ins" Style="{ThemeResource HeaderTextBlockStyle}" x:Uid="PlugInsUIHeader"/>
+                <ToggleSwitch x:Uid="DeveloperModeToggle" x:Name="DeveloperToggle" OnContent="Developer Mode Enabled" OffContent="Developer Mode Disabled" 
+                              FlowDirection="RightToLeft" Toggled="DeveloperToggle_Toggled"
+                              RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"/>
+            </RelativePanel>
             <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="10"
                   AllowDrop="True" Drop="Tip_Drop" DragOver="Tip_DragOver">
                 <Grid.RowDefinitions>

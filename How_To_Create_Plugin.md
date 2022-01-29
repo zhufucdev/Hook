@@ -87,7 +87,7 @@ The file path to desired document.
 #### writeline(content: any)
 Write some text into the Debug section.
 
-#### showInfobar(title: string, message: string, severity: string = "")
+#### showInfoBar(title: string, message: string, severity: string = "")
 Write some text into the InfoBar section.
 ##### param: severity
 Different severity corresponds to different background colors and icons.

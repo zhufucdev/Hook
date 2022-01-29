@@ -6,10 +6,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.Storage.Search;
 using Windows.UI.Xaml.Controls;
 
@@ -25,8 +25,13 @@ namespace Hook.Plugin
         private static StartupTask startupTask;
         private static async Task<IPlugin> CreateInstance(StorageFolder root)
         {
-            var manifestFile = await root.GetFileAsync(JSPlugin.PLUGIN_MANIFEST_FILE_NAME);
-            var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile));
+            var manifestFile = await root.TryGetItemAsync(JSPlugin.PLUGIN_MANIFEST_FILE_NAME);
+            if (manifestFile == null || !(manifestFile is IStorageFile))
+            {
+                throw new ArgumentException(Utility.GetResourceString("Exception/Manifest"));
+            }
+
+            var manifest = JObject.Parse(await FileIO.ReadTextAsync(manifestFile as IStorageFile));
             var plugin = new JSPlugin(manifest, root);
 
             if (manifest.ContainsKey(JSPlugin.MANIFEST_KEY_REQUIRE))
@@ -90,7 +95,7 @@ namespace Hook.Plugin
             {
                 notLoaded = notLoaded.Remove(notLoaded.Length - 2);
                 App.ShowInfoBar(
-                    Utility.GetResourceString("PlugInLoadDependNotFound/Title"), 
+                    Utility.GetResourceString("PlugInLoadDependNotFound/Title"),
                     Utility.GetResourceString("PlugInLoadDependNotFound/Message").Replace("%s%", plugin.Name).Replace("%d%", notLoaded),
                     Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning);
                 return;
@@ -129,11 +134,36 @@ namespace Hook.Plugin
             Installation = ins as StorageFolder;
 
             // load all installed
-            var plugins = await Installation.GetFoldersAsync();
+            var plugins = (await Installation.GetFoldersAsync()).ToList();
             foreach (var plugin in plugins)
             {
                 var instance = await CreateInstance(plugin);
                 Plugins.Add(instance);
+            }
+            // load sideloaders only if developer mode is on
+            if (Utility.DeveloperMode)
+            {
+                var sideloaders = Utility.Sideloaders.ToList();
+                foreach (var sideload in Utility.Sideloaders)
+                {
+                    StorageFolder folder;
+                    try
+                    {
+                        folder = await StorageFolder.GetFolderFromPathAsync(sideload);
+                    }
+                    catch
+                    {
+                        // delete redundance
+                        sideloaders.Remove(sideload);
+                        continue;
+                    }
+                    var instance = await CreateInstance(folder);
+                    Plugins.Add(instance);
+                }
+                if (Utility.Sideloaders.Count() > sideloaders.Count)
+                {
+                    Utility.Sideloaders = sideloaders.ToArray();
+                }
             }
 
             LoadAll();
@@ -295,6 +325,21 @@ namespace Hook.Plugin
             await Load(plugin);
         }
 
+        public static async Task Sideload(StorageFolder folder)
+        {
+            if (Utility.Sideloaders.Contains(folder.Path))
+            {
+                return;
+            }
+            
+            var plugin = await CreateInstance(folder);
+            Plugins.Add(plugin);
+            await Load(plugin);
+
+            StorageApplicationPermissions.FutureAccessList.Add(folder);
+            Utility.Sideloaders = Utility.Sideloaders.Append(folder.Path).ToArray();
+        }
+
         public static async Task Uninstall(IPlugin plugin)
         {
             if (plugin is JSPlugin)
@@ -393,12 +438,14 @@ namespace Hook.Plugin
         public static void LoadAll(bool useCache = true)
         {
             Task lastTask = null;
-            UseWithDependency(p => {
+            UseWithDependency(p =>
+            {
                 if (lastTask != null)
                 {
                     lastTask.ContinueWith(t => Load(p));
                 }
-                else {
+                else
+                {
                     lastTask = Load(p);
                 }
             }, useCache);

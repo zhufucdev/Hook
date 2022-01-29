@@ -144,6 +144,12 @@
   <data name="ConvertHeader.Text" xml:space="preserve">
     <value>正在将文档转换为网页</value>
   </data>
+  <data name="DeveloperModeToggle.OffContent" xml:space="preserve">
+    <value>开发者模式已禁用</value>
+  </data>
+  <data name="DeveloperModeToggle.OnContent" xml:space="preserve">
+    <value>开发者模式已启用</value>
+  </data>
   <data name="DropInstallBody.Text" xml:space="preserve">
     <value>支持.hplugin文件，安装后将在文档或Hook中实现插件的功能</value>
   </data>
@@ -152,6 +158,9 @@
   </data>
   <data name="ErrorOpen.Title" xml:space="preserve">
     <value>打开文件时出现错误</value>
+  </data>
+  <data name="Exception.Manifest" xml:space="preserve">
+    <value>无效插件：缺少签名文件</value>
   </data>
   <data name="GeneralHeader.Text" xml:space="preserve">
     <value>通用</value>

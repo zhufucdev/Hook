@@ -1,22 +1,13 @@
 ﻿using Hook.Plugin;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.ApplicationModel.Core;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using muxc = Microsoft.UI.Xaml.Controls;
 
@@ -90,7 +81,7 @@ namespace Hook
                 }
                 // 确保当前窗口处于活动状态
                 Window.Current.Activate();
-                
+
                 if (InfoStack.Count > 0)
                 {
                     ShowInfoBar(null, null, muxc.InfoBarSeverity.Informational);
@@ -109,15 +100,15 @@ namespace Hook
 
             #region Converters
             var builtin = new DefaultDocumentConvert();
-            var roamingSettings = ApplicationData.Current.RoamingSettings;
+            var settings = Utility.RoamingSettings;
             Utility.AvailableConverters.Add(builtin);
 
             // setup default converter
-            if (roamingSettings.Values.ContainsKey("DefaultConverter"))
+            if (settings.Values.ContainsKey(Utility.KEY_DEFAULT_CONVERTER))
             {
                 Utility.DefaultConverter =
                     Utility.AvailableConverters.FirstOrDefault
-                    (converter => converter.ID.ToString() == roamingSettings.Values["DefaultConverter"].ToString());
+                    (converter => converter.ID.ToString() == settings.Values[Utility.KEY_DEFAULT_CONVERTER].ToString());
                 if (Utility.DefaultConverter == null)
                 {
                     await new ContentDialog()
@@ -132,7 +123,7 @@ namespace Hook
             else
             {
                 Utility.DefaultConverter = builtin;
-                roamingSettings.Values["DefaultConverter"] = builtin.ID.ToString();
+                settings.Values[Utility.KEY_DEFAULT_CONVERTER] = builtin.ID.ToString();
             }
             #endregion
             DocumentInfo.LoadFromDisk();
@@ -145,7 +136,6 @@ namespace Hook
                     PluginManager.RecognizeStartupTask();
                 }
             });
-
             #endregion
             SettingsLoaded = true;
         }
@@ -199,7 +189,8 @@ namespace Hook
         protected override void OnFileActivated(FileActivatedEventArgs args)
         {
             Launch(args, "--no-homescreen");
-            foreach (var file in args.Files) {
+            foreach (var file in args.Files)
+            {
                 if (file is IStorageFile)
                 {
                     var doc = DocumentInfo.Parse(file as IStorageFile);
@@ -263,7 +254,8 @@ namespace Hook
             }
         }
 
-        private class InfoPiece {
+        private class InfoPiece
+        {
             public readonly string Title;
             public readonly string Message;
             public readonly muxc.InfoBarSeverity Severity;

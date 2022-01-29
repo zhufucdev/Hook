@@ -1,14 +1,13 @@
 ﻿using Hook.API;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Hook.Plugin
 {
     internal class SimpleDocumentView : DocumentView
     {
-        
+
         protected readonly WebView2 webView;
         protected readonly DocumentInfo doc;
         protected SimpleDocumentView(WebView2 webView, DocumentInfo doc)
@@ -17,13 +16,16 @@ namespace Hook.Plugin
             this.doc = doc;
         }
 
-        private double _zoom = 1;
-        public double ZoomFactor { 
-            get => _zoom;
-            set {
-                _zoom = value;
-                _ = RunScript(string.Format("document.body.style.zoom = {0}", value));
+        public double ZoomFactor
+        {
+            get
+            {
+                var task = RunScript("document.body.style.zoom");
+                task.Wait();
+                int.TryParse(task.Result, out int factor);
+                return factor;
             }
+            set => _ = RunScript(string.Format("document.body.style.zoom = {0}", value));
         }
 
         public Uri Source => webView.Source;

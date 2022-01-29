@@ -20,6 +20,7 @@ namespace Hook
         public PluginPage()
         {
             this.InitializeComponent();
+            DeveloperToggle.IsOn = Utility.DeveloperMode;
             PluginItems.ItemsSource = PluginManager.Plugins;
         }
 
@@ -30,9 +31,13 @@ namespace Hook
                 var items = await e.DataView.GetStorageItemsAsync();
                 foreach (var item in items)
                 {
-                    if (item is StorageFile && PluginManager.SupportedFormats.Contains(Path.GetExtension(item.Path)))
+                    // accept only if it is a file of support format
+                    // or it is a folder with developer mode turned on,
+                    // which is called Sideload
+                    if ((item is StorageFile && PluginManager.SupportedFormats.Contains(Path.GetExtension(item.Path)))
+                        || (item is StorageFolder && Utility.DeveloperMode))
                     {
-                        TryInstall(item as StorageFile);
+                        TryInstall(item);
                     }
                 }
             }
@@ -60,11 +65,18 @@ namespace Hook
             }
         }
 
-        private async void TryInstall(StorageFile file)
+        private async void TryInstall(IStorageItem file)
         {
             try
             {
-                await PluginManager.Install(file);
+                if (file is StorageFile)
+                {
+                    await PluginManager.Install(file as StorageFile);
+                }
+                else
+                {
+                    await PluginManager.Sideload(file as StorageFolder);
+                }
             }
             catch (Exception ex)
             {
@@ -79,5 +91,13 @@ namespace Hook
                 await dialog.ShowAsync();
             }
         }
+
+        private void DeveloperToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            Utility.DeveloperMode = DeveloperToggle.IsOn;
+            DeveloperModeToggled?.Invoke(this, DeveloperToggle.IsOn);
+        }
+
+        public static event EventHandler<bool> DeveloperModeToggled;
     }
 }

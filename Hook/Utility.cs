@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Toolkit.Uwp.Helpers;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Resources;
 using Windows.Storage;
-using Windows.Storage.AccessCache;
 using Windows.UI;
 using Windows.UI.Core;
 
@@ -14,11 +9,11 @@ namespace Hook
 {
     internal class Utility
     {
-
         public static string GetResourceString(string code, UIContext context = null)
         {
             ResourceLoader resourceLoader;
-            if (CoreWindow.GetForCurrentThread() != null) {
+            if (CoreWindow.GetForCurrentThread() != null)
+            {
                 resourceLoader = ResourceLoader.GetForCurrentView();
             }
             else if (context != null)
@@ -35,5 +30,39 @@ namespace Hook
 
         public static DocumentConvert DefaultConverter;
         public static ObservableCollection<DocumentConvert> AvailableConverters = new ObservableCollection<DocumentConvert>();
+
+        public static ApplicationDataStorageHelper DataStorageHelper = new ApplicationDataStorageHelper(ApplicationData.Current, new JsonObjectSerializer());
+
+        public static ApplicationDataContainer RoamingSettings => ApplicationData.Current.RoamingSettings;
+        public static ApplicationDataContainer LocalSettings => ApplicationData.Current.LocalSettings;
+
+        public static T GetSettings<T>(string key)
+        {
+            if (DataStorageHelper.KeyExists(key))
+            {
+                return DataStorageHelper.Read<T>(key);
+            }
+            return default;
+        }
+        public static void ModifySettings<T>(string key, T value)
+        {
+            DataStorageHelper.Save(key, value);
+        }
+
+        public static bool DeveloperMode
+        {
+            get => GetSettings<bool>(KEY_DEVELOPER_MODE);
+            set => ModifySettings(KEY_DEVELOPER_MODE, value);
+        }
+
+        public static string[] Sideloaders
+        {
+            get => GetSettings<string[]>(KEY_SIDELOADERS) ?? new string[0];
+            set => ModifySettings(KEY_SIDELOADERS, value);
+        }
+
+        public const string KEY_SIDELOADERS = "Sideloaders";
+        public const string KEY_DEVELOPER_MODE = "DeveloperMode";
+        public const string KEY_DEFAULT_CONVERTER = "DefaultCoverter";
     }
 }
