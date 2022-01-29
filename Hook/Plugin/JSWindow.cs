@@ -27,6 +27,22 @@ namespace Hook.Plugin
             _appView?.TryEnterFullScreenMode();
         }
 
+        public Wrapper GetWrapper() => new Wrapper(this);
+
         public static JSWindow Instance = new JSWindow();
+        
+        public class Wrapper
+        {
+            private JSWindow parent;
+            public Wrapper(JSWindow parent)
+            {
+                this.parent = parent;
+            }
+
+#pragma warning disable IDE1006 // 命名样式
+            public void activate() => parent.Activate();
+            public void tryEntryFullscreen() => parent.TryEnterFullscreen();
+#pragma warning restore IDE1006 // 命名样式
+        }
     }
 }

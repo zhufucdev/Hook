@@ -8,6 +8,7 @@ namespace Hook.API
         Task<string> RunScript(string script);
         double ZoomFactor { get; set; }
         Uri Source { get; }
+        IDocument Info { get; }
         void Close();
     }
 }

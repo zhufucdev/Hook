@@ -147,13 +147,14 @@
     </Compile>
     <Compile Include="DocumentInfo.cs" />
     <Compile Include="DocumentEventArgs.cs" />
+    <Compile Include="Extension.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="PluginPage.xaml.cs">
       <DependentUpon>PluginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Plugin\IDocument.cs" />
+    <Compile Include="Plugin\JSDocumentWrapper.cs" />
     <Compile Include="Plugin\JSDocumentView.cs" />
     <Compile Include="Plugin\JSPlugin.cs" />
     <Compile Include="Plugin\JSWindow.cs" />
@@ -264,10 +265,10 @@
       <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.8.0-prerelease.210927001</Version>
+      <Version>2.8.0-prerelease.220118001</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.1083-prerelease</Version>
+      <Version>1.0.1133-prerelease</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
@@ -278,9 +279,6 @@
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Hook_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\API\API.csproj">

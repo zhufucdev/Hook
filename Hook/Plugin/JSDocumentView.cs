@@ -35,5 +35,41 @@ namespace Hook.Plugin
                 return await RunScript(string.Format("{0}({1})", functionName, arguments));
             }
         }
+
+        public Wrapper GetWrapper() => new Wrapper(this);
+
+        public class Wrapper
+        {
+            private JSDocumentView parent;
+            public Wrapper(JSDocumentView parent)
+            {
+                this.parent = parent;
+                info = new JSDocumentWrapper(parent.Info);
+            }
+#pragma warning disable IDE1006 // 命名样式
+            public Uri source => parent.Source;
+            public JSDocumentWrapper info;
+            public double zoomFactor
+            {
+                get => parent.ZoomFactor;
+                set => parent.ZoomFactor = value;
+            }
+            public void close() => parent.Close();
+
+            public string runScript(string script)
+            {
+                var task = parent.RunScript(script);
+                task.Wait();
+                return task.Result;
+            }
+
+            public string runEmbedded(string name, string functionName = null, string arguments = null)
+            {
+                var task = parent.RunEmbedded(name, functionName, arguments);
+                task.Wait();
+                return task.Result;
+            }
+#pragma warning restore IDE1006 // 命名样式
+        }
     }
 }

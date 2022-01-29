@@ -81,15 +81,15 @@ namespace Hook.Plugin
         {
             // function
             Engine.SetValue("addEventListener", new Action<string, Jint.Native.JsValue>(J_addEventListener));
-            Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView[]>(J_getOpenedDocuments));
-            Engine.SetValue("getRecentDocuments", new Func<IDocument[]>(() => DocumentInfo.RecentDocs.ToArray()));
+            Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView.Wrapper[]>(J_getOpenedDocuments));
+            Engine.SetValue("getRecentDocuments", new Func<JSDocumentWrapper[]>(() => DocumentInfo.RecentDocs.Select(v => new JSDocumentWrapper(v)).ToArray()));
             Engine.SetValue("download", new Action<string, Jint.Native.JsValue, Jint.Native.JsValue>(J_download));
             Engine.SetValue("openDocument", new Action<string>(J_openDocument));
             Engine.SetValue("writeline", new Action<object>(J_writeline));
             Engine.SetValue("showInfoBar", new Action<string, string, string>(J_showInfoBar));
 
             // field
-            Engine.SetValue("window", JSWindow.Instance);
+            Engine.SetValue("window", JSWindow.Instance.GetWrapper());
         }
 
         private event EventHandler Unloaded;
@@ -102,7 +102,7 @@ namespace Hook.Plugin
             }
 
             void wrapCallback(params object[] args) => 
-                callback.AsCallable().Call(args.Select((v) => Jint.Native.JsValue.FromObject(Engine, v)).ToArray());
+                callback.AsCallable().Call(Engine, args);
 
             void wrapCallbackZeroArgument(object sender, object v) =>
                 callback.AsCallable().Call();
@@ -110,12 +110,12 @@ namespace Hook.Plugin
             switch (eventName)
             {
                 case "documentLoaded":
-                    Action<DocumentEventArgs> d = (v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    Action<DocumentEventArgs> d = (v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo).GetWrapper());
                     ContentPage.RegisterFor(this, ContentPage.DocumentOpenedForPlugin, d);
                     Unloaded += (s, v) => ContentPage.DocumentOpenedForPlugin.Remove(this);
                     break;
                 case "documentClosed":
-                    EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo));
+                    EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo).GetWrapper());
                     ContentPage.DocumentClosed += d2;
                     Unloaded += (s, v) => ContentPage.DocumentClosed -= d2;
                     break;
@@ -132,8 +132,8 @@ namespace Hook.Plugin
             }
         }
 
-        private JSDocumentView[] J_getOpenedDocuments() => 
-            ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key)).ToArray();
+        private JSDocumentView.Wrapper[] J_getOpenedDocuments() => 
+            ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key).GetWrapper()).ToArray();
 
         private List<HttpClient> downloadClients = new List<HttpClient>();
         private void J_download(string uri, Jint.Native.JsValue rename = null, Jint.Native.JsValue callback = null)
@@ -165,7 +165,7 @@ namespace Hook.Plugin
                 var result = await client.GetAsync(uri);
                 if (!result.IsSuccessStatusCode)
                 {
-                    throw new InvalidOperationException(string.Format("HTTP: {0}", result.StatusCode));
+                    throw new HttpRequestException(string.Format("HTTP: {0}", result.StatusCode));
                 }
                 string name = null;
                 if (!string.IsNullOrWhiteSpace(mRename))
@@ -213,8 +213,20 @@ namespace Hook.Plugin
             }
             Task.Run(async () =>
             {
-                var path = await download();
-                mCallback?.Call(new Jint.Native.JsValue[] { Jint.Native.JsValue.FromObject(Engine, path) });
+                object result = null;
+                try
+                {
+                    result = await download();
+                } catch (HttpRequestException ex)
+                {
+                    var index = ex.Message.IndexOf("HTTP: ");
+                    if (index != -1)
+                    {
+                        result = int.Parse(ex.Message.Substring(6));
+                    }
+                } finally {
+                    mCallback?.Invoke(Engine, result);
+                }
             });
         }
 
