@@ -15,8 +15,6 @@ namespace Hook
         public HomePage()
         {
             this.InitializeComponent();
-
-            RecentList.ItemsSource = DocumentInfo.RecentDocs;
         }
 
         private async void Page_Drop(object sender, Windows.UI.Xaml.DragEventArgs e)
@@ -84,11 +82,6 @@ namespace Hook
             }
         }
 
-        private void RecentList_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            MainPage.Instance.OpenDocument(e.ClickedItem as DocumentInfo);
-        }
-
         private void SettingsButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             MainPage.Instance.OpenSettingsScreen();
@@ -96,7 +89,7 @@ namespace Hook
 
         private void RemoveMenuFlyoutItem_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            var doc = (sender as MenuFlyoutItem).DataContext as DocumentInfo;
+            var doc = (sender as MenuFlyoutItem).Tag as DocumentInfo;
             DocumentInfo.RecentDocs.Remove(doc);
             DocumentInfo.SaveToDisk();
         }
@@ -110,6 +103,15 @@ namespace Hook
         private void PluginButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             MainPage.Instance.OpenPluginScreen();
+        }
+
+        private void DocumentItemButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null)
+            {
+                MainPage.Instance.OpenDocument(button.Tag as DocumentInfo);
+            }
         }
     }
 }

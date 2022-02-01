@@ -140,6 +140,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CacheDocument.cs" />
     <Compile Include="DateConverter.cs" />
     <Compile Include="DefaultDocumentConvert.cs" />
     <Compile Include="DocumentConvert.cs" />
@@ -156,12 +157,17 @@
     <Compile Include="PluginPage.xaml.cs">
       <DependentUpon>PluginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Plugin\JSDocumentWrapper.cs" />
-    <Compile Include="Plugin\JSDocumentView.cs" />
+    <Compile Include="Plugin\Interpret\JSDocumentWrapper.cs" />
+    <Compile Include="Plugin\Interpret\JSDocumentView.cs" />
+    <Compile Include="Plugin\Interpret\JSPluginWrapper.cs" />
     <Compile Include="Plugin\JSPlugin.cs" />
-    <Compile Include="Plugin\JSWindow.cs" />
+    <Compile Include="Plugin\Interpret\JSWindow.cs" />
     <Compile Include="Plugin\PluginEventCollection.cs" />
     <Compile Include="Plugin\PluginManager.cs" />
+    <Compile Include="Plugin\Shortcut.cs" />
+    <Compile Include="Plugin\ShortcutProvider.xaml.cs">
+      <DependentUpon>ShortcutProvider.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Plugin\SideloadedJSPlugin.cs" />
     <Compile Include="Plugin\SimpleDocumentView.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -252,6 +258,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="PluginPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Plugin\ShortcutProvider.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StyleDictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

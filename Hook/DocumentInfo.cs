@@ -13,72 +13,41 @@ using Windows.Storage.AccessCache;
 
 namespace Hook
 {
-    public class DocumentInfo : IDocument
+    public abstract class LocalDocument : CacheDocument
     {
-        private readonly string _path;
-        public byte[] SHA
+        public override string Name => System.IO.Path.GetFileName(Path);
+        public string Path { get; private set; }
+        public static StorageFolder Cache
         {
-            private set;
-            get;
-        }
-        private DateTime _lastTouched;
-        public Guid CacheMethod
-        {
-            private set;
-            get;
-        }
-
-        public string Path => _path;
-
-        public DateTime LastTouched => _lastTouched;
-
-        public string Name => System.IO.Path.GetFileName(_path);
-
-
-        private DocumentInfo(string path)
-        {
-            _path = path;
-            _lastTouched = DateTime.Now;
-        }
-
-        private DocumentInfo(string path, DateTime lastTouched, byte[] sha, Guid cacheMethod)
-        {
-            _path = path;
-            _lastTouched = lastTouched;
-            SHA = sha;
-            CacheMethod = cacheMethod;
-        }
-
-        public static StorageFolder Cache {
             get => ApplicationData.Current.LocalCacheFolder;
         }
+        public virtual byte[] SHA
+        {
+            protected set;
+            get;
+        }
+        public Guid CacheMethod
+        {
+            protected set;
+            get;
+        }
 
-        public void Open()
+        public LocalDocument(string path)
+        {
+            Path = path;
+        }
+
+        public override void Open()
         {
             if (!SupportedFormats.Contains(System.IO.Path.GetExtension(Path).ToLower()))
             {
                 throw new NotSupportedException();
             }
-            _lastTouched = DateTime.Now;
-            _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, () => {
-                MainPage.Instance.OpenDocument(this);
-
-                // ensure this appears first in the list
-                int index = RecentDocs.IndexOf(this);
-                if (index != -1)
-                {
-                    RecentDocs.Move(index, 0);
-                }
-                else
-                {
-                    RecentDocs.Insert(0, this);
-                }
-            });
-
-            Sync(this);
+            _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, 
+                () => MainPage.Instance.OpenDocument(this));
         }
 
-        public async Task<StorageFile> BuildCache()
+        public override async Task<StorageFile> BuildCache()
         {
             var name = GetDesignedCacheName(this) + ".html";
             var outPath = System.IO.Path.Combine(Cache.Path, name);
@@ -99,11 +68,91 @@ namespace Hook
                 await coverter.Convert(Path, outPath);
                 CacheMethod = coverter.ID;
                 SHA = currentSHA;
-                Sync(this);
             }
 
             var file = await StorageFile.GetFileFromPathAsync(outPath);
             return file;
+        }
+        /// <summary>
+        /// Calculate the checksum of a document from filesystem
+        /// </summary>
+        /// <param name="doc">The doc</param>
+        /// <returns>Checksum via SHA256</returns>
+        private static async Task<byte[]> CalcuateSHA(LocalDocument doc)
+        {
+            byte[] result = null;
+            var file = await StorageFile.GetFileFromPathAsync(doc.Path);
+            using (var sha256 = SHA256.Create())
+            {
+                using (var stream = await file.OpenStreamForReadAsync())
+                {
+                    result = sha256.ComputeHash(stream);
+                }
+            }
+            return result;
+        }
+        /// <summary>
+        /// Result: original name + base64(sha1(doc.Path))
+        /// </summary>
+        /// <param name="doc">The original one</param>
+        /// <returns></returns>
+        internal static string GetDesignedCacheName(LocalDocument doc)
+        {
+            string name = System.IO.Path.GetFileNameWithoutExtension(doc.Path);
+            using (var sha1 = SHA1.Create())
+            {
+                byte[] sha = sha1.ComputeHash(Encoding.UTF8.GetBytes(doc.Path));
+                name += Convert.ToBase64String(sha).Replace('/', '-');
+            }
+            return name;
+        }
+
+        public static string[] SupportedFormats = { ".docx", ".doc" };
+    }
+
+    public class DocumentInfo : LocalDocument
+    {
+        public DateTime LastTouched { get; private set; }
+
+        public override string Description
+        {
+            get
+            {
+                string testPattern = "MM-dd-yyyy";
+                if (LastTouched.ToString(testPattern) == DateTime.Now.ToString(testPattern))
+                {
+                    // it's today
+                    return LastTouched.ToString("hh:mm tt");
+                }
+                return LastTouched.ToString("MMMM dd hh:mm tt");
+            }
+        }
+        private DocumentInfo(string path) : base(path)
+        {
+            LastTouched = DateTime.Now;
+        }
+
+        private DocumentInfo(string path, DateTime lastTouched, byte[] sha, Guid cacheMethod) : base(path)
+        {
+            LastTouched = lastTouched;
+            SHA = sha;
+            CacheMethod = cacheMethod;
+        }
+
+        public override void Open()
+        {
+            base.Open();
+            // ensure this appears first in the list
+            int index = RecentDocs.IndexOf(this);
+            if (index != -1)
+            {
+                RecentDocs.Move(index, 0);
+            }
+            else
+            {
+                RecentDocs.Insert(0, this);
+            }
+            Sync(this);
         }
 
         public static ObservableCollection<DocumentInfo> RecentDocs = new ObservableCollection<DocumentInfo>();
@@ -147,7 +196,13 @@ namespace Hook
 
             RecentDocs.CollectionChanged += RecentDocs_CollectionChanged;
         }
-
+        public override byte[] SHA { 
+            get => base.SHA;
+            protected set { 
+                base.SHA = value;
+                Sync(this);
+            }
+        }
 
         private static List<DocumentInfo> Removed = new List<DocumentInfo>();
         private static void RecentDocs_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -194,7 +249,6 @@ namespace Hook
                 }
             }
         }
-
         private static async void Sync(DocumentInfo doc)
         {
             var obj = new JObject();
@@ -221,42 +275,5 @@ namespace Hook
             StorageApplicationPermissions.FutureAccessList.Add(file);
             return Parse(file.Path);
         }
-
-        /// <summary>
-        /// Result: original name + base64(sha1(doc.Path))
-        /// </summary>
-        /// <param name="doc">The original one</param>
-        /// <returns></returns>
-        private static string GetDesignedCacheName(DocumentInfo doc)
-        {
-            string name = System.IO.Path.GetFileNameWithoutExtension(doc.Path);
-            using (var sha1 = SHA1.Create())
-            {
-                byte[] sha = sha1.ComputeHash(Encoding.UTF8.GetBytes(doc.Path));
-                name += Convert.ToBase64String(sha).Replace('/', '-');
-            }
-            return name;
-        }
-
-        /// <summary>
-        /// Calculate the checksum of a document from filesystem
-        /// </summary>
-        /// <param name="doc">The doc</param>
-        /// <returns>Checksum via SHA256</returns>
-        private static async Task<byte[]> CalcuateSHA(DocumentInfo doc)
-        {
-            byte[] result = null;
-            var file = await StorageFile.GetFileFromPathAsync(doc.Path);
-            using (var sha256 = SHA256.Create())
-            {
-                using (var stream = await file.OpenStreamForReadAsync())
-                {
-                    result = sha256.ComputeHash(stream);
-                }
-            }
-            return result;
-        }
-
-        public static string[] SupportedFormats = { ".docx", ".doc" };
     }
 }

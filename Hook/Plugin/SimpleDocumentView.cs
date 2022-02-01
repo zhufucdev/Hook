@@ -9,8 +9,8 @@ namespace Hook.Plugin
     {
 
         protected readonly WebView2 webView;
-        protected readonly DocumentInfo doc;
-        protected SimpleDocumentView(WebView2 webView, DocumentInfo doc)
+        protected readonly IDocument doc;
+        protected SimpleDocumentView(WebView2 webView, IDocument doc)
         {
             this.webView = webView;
             this.doc = doc;

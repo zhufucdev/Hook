@@ -10,12 +10,12 @@ namespace Hook
     public class DocumentEventArgs : EventArgs
     {
         public readonly WebView2 WebView;
-        public readonly DocumentInfo DocumentInfo;
+        public readonly CacheDocument info;
 
-        public DocumentEventArgs(WebView2 webView, DocumentInfo doc) : base()
+        public DocumentEventArgs(WebView2 webView, CacheDocument doc) : base()
         {
             WebView = webView;
-            DocumentInfo = doc;
+            info = doc;
         }
     }
 }

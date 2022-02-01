@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.Security.Cryptography;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using Windows.UI.Xaml.Controls;
 using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace Hook.Plugin
@@ -90,7 +91,10 @@ namespace Hook.Plugin
 
             // field
             Engine.SetValue("window", JSWindow.Instance.GetWrapper());
+            Engine.SetValue("plugin", GetWrapper());
         }
+
+        public JSPluginWrapper GetWrapper() => new JSPluginWrapper(this);
 
         private event EventHandler Unloaded;
         #region JS Functions
@@ -110,12 +114,12 @@ namespace Hook.Plugin
             switch (eventName)
             {
                 case "documentLoaded":
-                    Action<DocumentEventArgs> d = (v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo).GetWrapper());
+                    Action<DocumentEventArgs> d = (v) => wrapCallback(new JSDocumentView(this, v.WebView, v.info).GetWrapper());
                     ContentPage.RegisterFor(this, ContentPage.DocumentOpenedForPlugin, d);
                     Unloaded += (s, v) => ContentPage.DocumentOpenedForPlugin.Remove(this);
                     break;
                 case "documentClosed":
-                    EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.DocumentInfo).GetWrapper());
+                    EventHandler<DocumentEventArgs> d2 = (s, v) => wrapCallback(new JSDocumentView(this, v.WebView, v.info).GetWrapper());
                     ContentPage.DocumentClosed += d2;
                     Unloaded += (s, v) => ContentPage.DocumentClosed -= d2;
                     break;
@@ -255,6 +259,40 @@ namespace Hook.Plugin
             _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, 
                 () => App.ShowInfoBar(title, message, severityEnum));
         }
+
+        internal Shortcut CreateShortcut(string name, string description, string icon, Jint.Native.JsValue open)
+        {
+            Func<string> path;
+            if (open.IsCallable())
+            {
+                Action<double> updatePrograss = (value) =>
+                {
+
+                };
+                path = () =>
+                {
+                    var invoke = open.AsCallable().Invoke(Engine, updatePrograss);
+                    if (invoke.IsString())
+                    {
+                        return invoke.AsString();
+                    }
+                    else
+                    {
+                        throw new InvalidCastException("expecting return typed string");
+                    }
+                };
+            }
+            else if (open.IsString())
+            {
+                path = () => open.AsString();
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
+            var symbol = (Symbol) Enum.Parse(typeof(Symbol), icon, true);
+            return new Shortcut(name, description, path, symbol);
+        }
         #endregion
 
         public override string Name => _name;
@@ -302,6 +340,7 @@ namespace Hook.Plugin
                 {
                 }
             }
+            await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, Shortcuts.Clear);
         }
 
         private void CheckRequirement(string key)

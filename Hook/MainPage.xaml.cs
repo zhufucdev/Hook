@@ -1,4 +1,5 @@
-﻿using Hook.Plugin;
+﻿using Hook.API;
+using Hook.Plugin;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,11 +132,11 @@ namespace Hook
             TabView.SelectedItem = newTab;
         }
 
-        public void CloseDocument(DocumentInfo doc)
+        public void CloseDocument(IDocument doc)
         {
             foreach (muxc.TabViewItem item in TabView.TabItems)
             {
-                if (item.Tag?.ToString() == doc.Path)
+                if (item.Tag == doc)
                 {
                     CloseTab(item);
                     break;
@@ -143,17 +144,16 @@ namespace Hook
             }
         }
 
-        public void OpenDocument(DocumentInfo doc)
+        public void OpenDocument(CacheDocument doc)
         {
-            var path = doc.Path;
-            var search = TabView.TabItems?.FirstOrDefault((item) => (item as muxc.TabViewItem).Tag?.ToString() == path);
+            var search = TabView.TabItems?.FirstOrDefault((item) => (item as muxc.TabViewItem).Tag == doc);
             if (search == null)
             {
                 var newTab = new muxc.TabViewItem()
                 {
-                    Header = Path.GetFileName(path),
+                    Header = doc.Name,
                     IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Document },
-                    Tag = path
+                    Tag = doc
                 };
 
                 Frame frame = new Frame();

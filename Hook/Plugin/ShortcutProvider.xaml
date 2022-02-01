@@ -1,0 +1,60 @@
+﻿<UserControl
+    x:Class="Hook.Plugin.ShortcutProvider"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Hook.Plugin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <UserControl.Resources>
+        <ResourceDictionary Source="/StyleDictionary.xaml"/>
+    </UserControl.Resources>
+    <StackPanel>
+        <TextBlock x:Name="HeaderBlock" Text="Header"/>
+        <muxc:ItemsRepeater x:Name="List" Margin="0 10 0 0">
+            <muxc:ItemsRepeater.Layout>
+                <muxc:StackLayout Orientation="Vertical" Spacing="10"/>
+            </muxc:ItemsRepeater.Layout>
+            <muxc:ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="local:Shortcut" x:DefaultBindMode="OneWay">
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Style="{StaticResource DepressedButton}"
+                                        Tag="{x:Bind}" Click="OpenButton_Click">
+                        <Button.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Remove" x:Uid="RemoveButton" Tag="{x:Bind}" Click="RemoveFlyoutItem_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="Remove"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="Remove" x:Uid="ClearButton" Click="ClearMenuFlyoutItem_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="Clear"/>
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Button.ContextFlyout>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <SymbolIcon Symbol="{x:Bind IconSymbol}" Grid.RowSpan="2" Grid.Column="0" 
+                                        Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind Name}" Style="{ThemeResource BaseTextBlockStyle}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind Description}" Style="{ThemeResource BodyTextBlockStyle}"/>
+                            <muxc:ProgressBar x:Name="Prograss" Grid.ColumnSpan="2" Grid.Row="2" Visibility="Collapsed"/>
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </muxc:ItemsRepeater.ItemTemplate>
+        </muxc:ItemsRepeater>
+    </StackPanel>
+</UserControl>

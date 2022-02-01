@@ -15,8 +15,8 @@ namespace Hook
 {
     public sealed partial class ContentPage : Page
     {
-        public static Dictionary<DocumentInfo, WebView2> OpenedDocument = new Dictionary<DocumentInfo, WebView2>();
-        public DocumentInfo Current { get; private set; }
+        public static Dictionary<CacheDocument, WebView2> OpenedDocument = new Dictionary<CacheDocument, WebView2>();
+        public CacheDocument Current { get; private set; }
 
         public ContentPage()
         {
@@ -26,10 +26,10 @@ namespace Hook
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            OpenDocument(e.Parameter as DocumentInfo);
+            OpenDocument(e.Parameter as CacheDocument);
         }
 
-        private async void OpenDocument(DocumentInfo doc)
+        private async void OpenDocument(CacheDocument doc)
         {
             Windows.Storage.StorageFile cache = null;
             await Task.Run(async () =>
@@ -85,7 +85,6 @@ namespace Hook
                 });
                 ConvertingLayout.Visibility = Visibility.Collapsed;
             }
-            
         }
 
         public void Close()

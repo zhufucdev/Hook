@@ -9,16 +9,12 @@ namespace Hook.API
         /// </summary>
         void Open();
         /// <summary>
-        /// The absolute path of this document.
-        /// </summary>
-        string Path { get; }
-        /// <summary>
         /// Full file name of this document.
         /// </summary>
         string Name { get; }
         /// <summary>
-        /// Represents the last time when this document was opened.
+        /// Text displayed below the name section
         /// </summary>
-        DateTime LastTouched { get; }
+        string Description { get; }
     }
 }

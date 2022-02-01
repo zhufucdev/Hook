@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Hook.API;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Hook.Plugin
     {
         private readonly JSPlugin plugin;
 
-        public JSDocumentView(JSPlugin plugin, WebView2 webView2, DocumentInfo doc) : base(webView2, doc)
+        public JSDocumentView(JSPlugin plugin, WebView2 webView2, IDocument doc) : base(webView2, doc)
         {
             this.plugin = plugin;
         }

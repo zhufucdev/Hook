@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Hook.API
         public abstract string Version { get; }
         public abstract IPlugin[] Dependencies { get; }
         public abstract string[] Requirements { get; }
+        public ObservableCollection<IDocument> Shortcuts = new ObservableCollection<IDocument>();
 
         public bool Loaded { protected set; get; }
 
