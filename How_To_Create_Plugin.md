@@ -78,6 +78,17 @@ If the file was successfully downloaded, *path* will be its absolute path to the
 If it's an http error, it's state code will be given.
 Otherwise, a null parameter is given in a system exception.
 
+#### httpAsString(uri: string, callback: function)
+Cast a HTTP site as string.
+##### param: uri
+HTTP address to the desired website.
+*see:* [HttpClient](https://docs.microsoft.com/en-us/windows/uwp/networking/httpclient)
+##### param: callback(content: string|integer|null)
+Called when the operation is done.
+If the file was successfully downloaded, *content* will be the desired string content.
+If it's an http error, it's state code will be given.
+Otherwise, a null parameter is given in a system exception.
+
 #### openDucment(path: string)
 Open a document and bring it to user.
 
@@ -98,9 +109,30 @@ Can be one of the followings:
 *see:* [Guidline by Microsoft](https://docs.microsoft.com/en-us/windows/apps/design/controls/infobar#severity)
 
 ### Properties
-#### window: [JSWindow](Hook/Plugin/JSWindow.cs)
+#### window: [JSWindow](Hook/Plugin/Interpret/JSWindow.cs)
 Represents the window of the app.
 ##### activate: function
 Activate the application.
 ##### tryEnterFullscreen: function
 Try to eneter fullscreen mode for the app.
+#### plugin: [JSPluginWrapper](Hook/Plugin/Interpret/JSPluginWrapper.cs)
+##### createShortcut: function(name, description, [iconSymbol, ]path)
+**param** name: string
+
+Title of the shortcut, displayed as the document name.
+
+**param** description: string
+Subtitle of the shortcut, displayed like the document last touched date.
+
+**param** iconSymbol: string
+Icon to be displayed.
+
+*See:* [Symbol by Microsoft](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.symbol?view=winrt-22000)
+
+**param** path: function(progressUpdater, resultInvoker)|string
+This parameter can either be a string constant, a function that returns a string const or a function that
+returns nothing and invokes its second argument with a string const. All you need to do is to provide the path
+to the file to be opened.
+
+The **progressUpdater** parameter is a function that receives a double as current progress, which ranges from 0 to 100
+as a percentage.
