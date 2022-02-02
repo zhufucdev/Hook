@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -13,7 +14,9 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
+using muxc = Microsoft.UI.Xaml.Controls;
 
 namespace Hook.Plugin
 {
@@ -37,7 +40,9 @@ namespace Hook.Plugin
                 }
 
                 _plugin = value;
-                HeaderBlock.Text = value.Name;
+                HeaderBlock.Text = Utility.GetResourceString("ShortcutHeader/Pattern").Replace("%s", value.Name);
+                List.ItemsSource = Plugin.Shortcuts;
+                _ = UpdateVisibilityAsync();
                 value.Shortcuts.CollectionChanged += Shortcuts_CollectionChanged;
             }
         }
@@ -45,6 +50,11 @@ namespace Hook.Plugin
         private async void Shortcuts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // listen for ui changes
+            await UpdateVisibilityAsync();
+        }
+        
+        private async Task UpdateVisibilityAsync()
+        {
             await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 if (Plugin.Shortcuts.Count <= 0)
@@ -53,7 +63,6 @@ namespace Hook.Plugin
                 }
                 else
                 {
-                    List.ItemsSource = Plugin.Shortcuts;
                     Show();
                 }
             });
@@ -71,11 +80,6 @@ namespace Hook.Plugin
             List.Visibility = Visibility.Visible;
         }
 
-        private void UpdatePrograss(double value)
-        {
-            
-        }
-
         private void RemoveFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
 
@@ -87,8 +91,28 @@ namespace Hook.Plugin
         }
 
         private void OpenButton_Click(object sender, RoutedEventArgs e)
-        {
+        {            
+            var btn = sender as Button;
+            btn.IsEnabled = false;
+            var progressBar = Utility.FindControl<muxc.ProgressBar>(btn, typeof(muxc.ProgressBar), "Progress");
+            progressBar.Visibility = Visibility.Visible;
+            (btn.FindName("FadeIn") as Storyboard).Begin();
 
+            var shortcut = btn.Tag as Shortcut;
+            shortcut.ProgressUpdater = (v) =>
+            {
+                progressBar.IsIndeterminate = false;
+                progressBar.Value = v;
+            };
+            shortcut.Callback = () =>
+            {
+                _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
+                    btn.IsEnabled = true;
+                    var fadeOut = btn.FindName("FadeOut") as Storyboard;
+                    fadeOut.Begin();
+                });
+            };
+            shortcut.Open();
         }
     }
 }

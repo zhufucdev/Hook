@@ -228,6 +228,9 @@
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>设置</value>
   </data>
+  <data name="ShortcutHeader.Pattern" xml:space="preserve">
+    <value>%s提供的快捷方式</value>
+  </data>
   <data name="StartupDeny.Message" xml:space="preserve">
     <value>要使用插件的全部功能，请在任务管理器或系统设置中启用自动启动</value>
   </data>

@@ -10,8 +10,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <UserControl.Resources>
-        <ResourceDictionary Source="/StyleDictionary.xaml"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/StyleDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
+    
     <StackPanel>
         <TextBlock x:Name="HeaderBlock" Text="Header"/>
         <muxc:ItemsRepeater x:Name="List" Margin="0 10 0 0">
@@ -37,6 +42,15 @@
                             </MenuFlyout>
                         </Button.ContextFlyout>
                         <Grid>
+                            <Grid.Resources>
+                                <Storyboard x:Name="FadeOut">
+                                    <FadeOutThemeAnimation Storyboard.TargetName="Progress"/>
+                                </Storyboard>
+                                <Storyboard x:Name="FadeIn">
+                                    <FadeInThemeAnimation Storyboard.TargetName="Progress"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
@@ -50,7 +64,7 @@
                                         Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind Name}" Style="{ThemeResource BaseTextBlockStyle}"/>
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind Description}" Style="{ThemeResource BodyTextBlockStyle}"/>
-                            <muxc:ProgressBar x:Name="Prograss" Grid.ColumnSpan="2" Grid.Row="2" Visibility="Collapsed"/>
+                            <muxc:ProgressBar x:Name="Progress" Grid.ColumnSpan="2" Grid.Row="2" Visibility="Collapsed" IsIndeterminate="True"/>
                         </Grid>
                     </Button>
                 </DataTemplate>

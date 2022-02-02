@@ -41,7 +41,7 @@ namespace Hook.Plugin
 
 #pragma warning disable IDE1006 // 命名样式
             public void activate() => parent.Activate();
-            public void tryEntryFullscreen() => parent.TryEnterFullscreen();
+            public void tryEnterFullscreen() => parent.TryEnterFullscreen();
 #pragma warning restore IDE1006 // 命名样式
         }
     }

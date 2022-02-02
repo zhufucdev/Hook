@@ -29,7 +29,8 @@ namespace Hook.Plugin
                 finalPathfinding = icon;
             }
             var shortcut = parent.CreateShortcut(name, description, finalIcon, finalPathfinding);
-            MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => parent.Shortcuts.Add(shortcut));
+            _ = MainPage.Instance.Dispatcher
+                .RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => parent.Shortcuts.Add(shortcut));
         }
 #pragma warning restore IDE1006 // 命名样式
     }

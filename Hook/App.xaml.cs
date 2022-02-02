@@ -179,13 +179,12 @@ namespace Hook
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: 保存应用程序状态并停止任何后台活动
-            PluginManager.UnloadAll();
             deferral.Complete();
         }
 
         private void App_Resuming(object sender, object e)
         {
-            PluginManager.LoadAll();
+            
         }
 
         protected override void OnFileActivated(FileActivatedEventArgs args)
@@ -204,6 +203,10 @@ namespace Hook
         private static List<InfoPiece> InfoStack = new List<InfoPiece>();
         public static void ShowInfoBar(string title, string message, muxc.InfoBarSeverity severity)
         {
+            if (Window.Current == null)
+            {
+                return;
+            }
             var rootGrid = Window.Current.Content as Grid;
             if (rootGrid == null)
             {

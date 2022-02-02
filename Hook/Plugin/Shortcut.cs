@@ -9,8 +9,10 @@ namespace Hook.Plugin
         public string Name { get; }
         public string Description { get; }
         public Symbol IconSymbol;
-        private readonly Func<string> Pathfinding;
-        public Shortcut(string name, string description, Func<string> pathfinding, Symbol icon)
+        public Action<double> ProgressUpdater { private get; set; }
+        public Action Callback { private get; set; } = null;
+        private readonly Action<Action<double>, Action<string>> Pathfinding;
+        public Shortcut(string name, string description, Action<Action<double>, Action<string>> pathfinding, Symbol icon)
         {
             Name = name;
             Description = description;
@@ -20,9 +22,16 @@ namespace Hook.Plugin
 
         public void Open()
         {
-            var path = Pathfinding();
-            var doc = DocumentInfo.Parse(path);
-            doc.Open();
+            Action<string> callback = (p) =>
+            {
+                if (p != null)
+                {
+                    var doc = DocumentInfo.Parse(p);
+                    _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, doc.Open);
+                }
+                Callback?.Invoke();
+            };
+            Pathfinding(ProgressUpdater, callback);
         }
     }
 }

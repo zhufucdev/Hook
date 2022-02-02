@@ -1,9 +1,12 @@
 ﻿using Microsoft.Toolkit.Uwp.Helpers;
+using System;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.Resources;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 
 namespace Hook
 {
@@ -26,6 +29,30 @@ namespace Hook
             }
             var str = resourceLoader.GetString(code);
             return string.IsNullOrWhiteSpace(str) ? code : str;
+        }
+
+        public static T FindControl<T>(UIElement parent, Type targetType, string ControlName) where T : FrameworkElement
+        {
+
+            if (parent == null) return null;
+
+            if (parent.GetType() == targetType && ((T)parent).Name == ControlName)
+            {
+                return (T)parent;
+            }
+            T result = null;
+            int count = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < count; i++)
+            {
+                UIElement child = (UIElement)VisualTreeHelper.GetChild(parent, i);
+                var find = FindControl<T>(child, targetType, ControlName);
+                if (find != null)
+                {
+                    result = find;
+                    break;
+                }
+            }
+            return result;
         }
 
         public static DocumentConvert DefaultConverter;

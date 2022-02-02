@@ -64,11 +64,9 @@ namespace Hook.Plugin
                 return task.Result;
             }
 
-            public string runEmbedded(string name, string functionName = null, string arguments = null)
+            public void runEmbedded(string name, string functionName = null, string arguments = null)
             {
-                var task = parent.RunEmbedded(name, functionName, arguments);
-                task.Wait();
-                return task.Result;
+                _ = parent.RunEmbedded(name, functionName, arguments);
             }
 #pragma warning restore IDE1006 // 命名样式
         }

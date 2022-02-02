@@ -49,7 +49,7 @@
                 </Button>
             </DataTemplate>
 
-            <DataTemplate x:Key="ShortcutTemplate" x:DataType="api:IPlugin">
+            <DataTemplate x:Key="ShortcutTemplate" x:DefaultBindMode="OneWay" x:DataType="api:IPlugin">
                 <plugin:ShortcutProvider Plugin="{x:Bind}"/>
             </DataTemplate>
         </ResourceDictionary>

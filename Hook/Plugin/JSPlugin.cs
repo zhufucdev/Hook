@@ -85,6 +85,7 @@ namespace Hook.Plugin
             Engine.SetValue("getOpenedDocuments", new Func<JSDocumentView.Wrapper[]>(J_getOpenedDocuments));
             Engine.SetValue("getRecentDocuments", new Func<JSDocumentWrapper[]>(() => DocumentInfo.RecentDocs.Select(v => new JSDocumentWrapper(v)).ToArray()));
             Engine.SetValue("download", new Action<string, Jint.Native.JsValue, Jint.Native.JsValue>(J_download));
+            Engine.SetValue("httpAsString", new Action<string, Jint.Native.JsValue>(J_httpAsString));
             Engine.SetValue("openDocument", new Action<string>(J_openDocument));
             Engine.SetValue("writeline", new Action<object>(J_writeline));
             Engine.SetValue("showInfoBar", new Action<string, string, string>(J_showInfoBar));
@@ -139,7 +140,7 @@ namespace Hook.Plugin
         private JSDocumentView.Wrapper[] J_getOpenedDocuments() => 
             ContentPage.OpenedDocument.Select(p => new JSDocumentView(this, p.Value, p.Key).GetWrapper()).ToArray();
 
-        private List<HttpClient> downloadClients = new List<HttpClient>();
+        private List<HttpClient> activeClients = new List<HttpClient>();
         private void J_download(string uri, Jint.Native.JsValue rename = null, Jint.Native.JsValue callback = null)
         {
             string mRename = null;
@@ -165,11 +166,11 @@ namespace Hook.Plugin
             async Task<string> download()
             {
                 var client = new HttpClient();
-                downloadClients.Add(client);
+                activeClients.Add(client);
                 var result = await client.GetAsync(uri);
                 if (!result.IsSuccessStatusCode)
                 {
-                    throw new HttpRequestException(string.Format("HTTP: {0}", result.StatusCode));
+                    throw new HttpRequestException(string.Format("HTTP: {0}", ((int)result.StatusCode)));
                 }
                 string name = null;
                 if (!string.IsNullOrWhiteSpace(mRename))
@@ -211,7 +212,7 @@ namespace Hook.Plugin
                     var bf = await result.Content.ReadAsByteArrayAsync();
                     await fs.WriteAsync(CryptographicBuffer.CreateFromByteArray(bf));
                 }
-                downloadClients.Remove(client);
+                activeClients.Remove(client);
                 StorageApplicationPermissions.FutureAccessList.Add(file);
                 return file.Path;
             }
@@ -221,7 +222,8 @@ namespace Hook.Plugin
                 try
                 {
                     result = await download();
-                } catch (HttpRequestException ex)
+                } 
+                catch (HttpRequestException ex)
                 {
                     var index = ex.Message.IndexOf("HTTP: ");
                     if (index != -1)
@@ -232,6 +234,47 @@ namespace Hook.Plugin
                     mCallback?.Invoke(Engine, result);
                 }
             });
+        }
+
+        private void J_httpAsString(string url, Jint.Native.JsValue callback)
+        {
+            if (!callback.IsCallable())
+            {
+                throw new ArgumentException("callback not a function");
+            }
+
+            var client = new HttpClient();
+            activeClients.Add(client);
+
+            async Task<string> download()
+            {
+                var request = await client.GetAsync(url);
+                if (!request.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(string.Format("HTTP: {0}", (int) request.StatusCode));
+                }
+                return await request.Content.ReadAsStringAsync();
+            };
+            object result = null;
+            try
+            {
+                var task = download();
+                task.Wait();
+                result = task.Result;
+            }
+            catch (HttpRequestException ex)
+            {
+                var index = ex.Message.IndexOf("HTTP: ");
+                if (index != -1)
+                {
+                    result = int.Parse(ex.Message.Substring(6));
+                }
+            }
+            finally
+            {
+                activeClients.Remove(client);
+                callback.AsCallable().Invoke(Engine, result);
+            }
         }
 
         private void J_openDocument(string path)
@@ -262,29 +305,21 @@ namespace Hook.Plugin
 
         internal Shortcut CreateShortcut(string name, string description, string icon, Jint.Native.JsValue open)
         {
-            Func<string> path;
+            Action<Action<double>, Action<string>> path;
             if (open.IsCallable())
             {
-                Action<double> updatePrograss = (value) =>
+                path = (p, callback) =>
                 {
-
-                };
-                path = () =>
-                {
-                    var invoke = open.AsCallable().Invoke(Engine, updatePrograss);
-                    if (invoke.IsString())
+                    var r = open.AsCallable().Invoke(Engine, p, callback);
+                    if (r.IsString())
                     {
-                        return invoke.AsString();
-                    }
-                    else
-                    {
-                        throw new InvalidCastException("expecting return typed string");
+                        callback(r.AsString());
                     }
                 };
             }
             else if (open.IsString())
             {
-                path = () => open.AsString();
+                path = (p, callback) => callback(open.AsString());
             }
             else
             {
@@ -313,6 +348,7 @@ namespace Hook.Plugin
             {
                 return;
             }
+
             var mainFile = await Root.GetFileAsync(PLUGIN_ENTRY_FILE_NAME);
             Engine.Execute(await FileIO.ReadTextAsync(mainFile));
 
@@ -329,7 +365,7 @@ namespace Hook.Plugin
             Unloaded?.Invoke(this, new EventArgs());
             Unloaded = null;
             // cancel downloading tasks
-            foreach (var download in downloadClients)
+            foreach (var download in activeClients)
             {
                 try
                 {
@@ -340,6 +376,8 @@ namespace Hook.Plugin
                 {
                 }
             }
+            activeClients.Clear();
+
             await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, Shortcuts.Clear);
         }
 
