@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -32,6 +34,36 @@ namespace Hook
         {        
             var defaultIndex = Utility.AvailableConverters.IndexOf(Utility.DefaultConverter);
             ConverterList.SelectedIndex = defaultIndex;
+        }
+
+        private string ActuallLanguageCode = Utility.LanguageOverride;
+        private void AppLanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var code = (e.AddedItems[0] as Language).Code;
+            if (code != ActuallLanguageCode)
+            {
+                Utility.LanguageOverride = code;
+                Utility.SetAppLanguage(code);
+
+                App.ShowInfoBar(
+                    Utility.GetResourceString("ReloadToApply/Title"),
+                    Utility.GetResourceString("ReloadToApply/Message"),
+                    Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational
+                );
+            }
+        }
+
+        private void AppLanguageCombo_Loaded(object sender, RoutedEventArgs e)
+        {
+            var combo = sender as ComboBox;
+            for (int i = 0; i < Utility.LanguageCodes.Count; i++)
+            {
+                if (ActuallLanguageCode == Utility.LanguageCodes[i].Code)
+                {
+                    combo.SelectedIndex = i;
+                    break;
+                }
+            }
         }
     }
 }

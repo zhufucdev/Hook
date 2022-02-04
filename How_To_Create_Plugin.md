@@ -50,15 +50,15 @@ The API should be a consistent, event-based and full-function coding experience.
 
 |Name|Description|Callback Parameter|
 |:---|:----------|:-----------------|
-|documentLoaded|When a document is ready to be shown|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
-|documentClosed|When a document is about to be closed|[DocumentView](Hook/Plugin/JSDocumentView.cs)|
+|documentLoaded|When a document is ready to be shown|[JSDocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)|
+|documentClosed|When a document is about to be closed|[JSDocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)|
 |unload|When the plugin is about to be unloaded, usually app shutingdown or user uninstalling the plugin|nothing|
 |systemStartup|When the plugin is loaded because of system starting up|nothing|
 
 #### getOpenedDocuments()
 *return:* a read-only array containing each document shown in the tab view
 
-*see:* [DocumentView](Hook/Plugin/JSDocumentView.cs)
+*see:* [DocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)
 #### getRecentDocuments()
 *return:* a read-only array containing each document touched recently, sorted from most recent to least
 

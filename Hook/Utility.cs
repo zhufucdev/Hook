@@ -1,8 +1,11 @@
 ﻿using Microsoft.Toolkit.Uwp.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.Resources;
+using Windows.Globalization;
 using Windows.Storage;
+using Windows.System.UserProfile;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -12,16 +15,30 @@ namespace Hook
 {
     internal class Utility
     {
-        public static string GetResourceString(string code, UIContext context = null)
+        public static string GetResourceString(string code, UIContext context = null, string resources = null)
         {
             ResourceLoader resourceLoader;
             if (CoreWindow.GetForCurrentThread() != null)
             {
-                resourceLoader = ResourceLoader.GetForCurrentView();
+                if (string.IsNullOrEmpty(resources))
+                {
+                    resourceLoader = ResourceLoader.GetForCurrentView();
+                } 
+                else
+                {
+                    resourceLoader = ResourceLoader.GetForCurrentView(resources);
+                }
             }
             else if (context != null)
             {
-                resourceLoader = ResourceLoader.GetForUIContext(context);
+                if (string.IsNullOrEmpty(resources))
+                {
+                    resourceLoader = ResourceLoader.GetForUIContext(context);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
             else
             {
@@ -88,8 +105,40 @@ namespace Hook
             set => ModifySettings(KEY_SIDELOADERS, value);
         }
 
+        public static Collection<Language> LanguageCodes => new Collection<Language>()
+        {
+            new Language(GetResourceString("AppLanguageCombo/PlaceholderText"), string.Empty),
+            new Language("简体中文", "zh-CN"),
+            new Language("American English", "en-US")
+        };
+        public static string LanguageOverride
+        {
+            get => GetSettings<string>(KEY_LANGUAGE) ?? string.Empty;
+            set => ModifySettings(KEY_LANGUAGE, value);
+        }
+
+        public static void SetAppLanguage(string code)
+        {
+            ApplicationLanguages.PrimaryLanguageOverride = string.IsNullOrEmpty(code) ? string.Empty : code;
+        }
+
         public const string KEY_SIDELOADERS = "Sideloaders";
+        public const string KEY_LANGUAGE = "Language";
         public const string KEY_DEVELOPER_MODE = "DeveloperMode";
         public const string KEY_DEFAULT_CONVERTER = "DefaultCoverter";
+    }
+
+    public class Language
+    {
+        public readonly string Name;
+        public readonly string Code;
+
+        public Language(string name, string code)
+        {
+            Name = name;
+            Code = code;
+        }
+
+        public override string ToString() => Name;
     }
 }

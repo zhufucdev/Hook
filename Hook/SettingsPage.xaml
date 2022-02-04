@@ -6,13 +6,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:generic="using:System.Collections.Generic"
     mc:Ignorable="d">
 
     <ScrollViewer>
         <StackPanel Padding="24" Spacing="10" Orientation="Vertical">
             <TextBlock x:Uid="SettingsHeader" Text="Settings" Style="{ThemeResource HeaderTextBlockStyle}"/>
             <TextBlock x:Uid="GeneralHeader" Text="General" Style="{ThemeResource BaseTextBlockStyle}"/>
-
+            <StackPanel Orientation="Horizontal" Padding="10" 
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        CornerRadius="8"
+                        BorderThickness="1"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <SymbolIcon Symbol="Character" Margin="0,0,10,0"/>
+                <ComboBox Header="App Language" x:Uid="AppLanguageCombo" PlaceholderText="Follow System"
+                          SelectionChanged="AppLanguageCombo_SelectionChanged"
+                          Loaded="AppLanguageCombo_Loaded"
+                          ItemsSource="{x:Bind local:Utility.LanguageCodes}">
+                </ComboBox>
+            </StackPanel>
 
             <TextBlock x:Uid="ConverterHeader" Text="Converters" Style="{ThemeResource BaseTextBlockStyle}"/>
             <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False" HorizontalAlignment="Stretch">

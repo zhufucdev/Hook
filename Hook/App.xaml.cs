@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Globalization;
 using Windows.Storage;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -201,6 +202,14 @@ namespace Hook
         }
 
         private static List<InfoPiece> InfoStack = new List<InfoPiece>();
+        private static void StackMessage(InfoPiece info)
+        {
+            if (!InfoStack.Any(i => i.Message == info.Message))
+            {
+                // stack different message only
+                InfoStack.Add(info);
+            }
+        }
         public static void ShowInfoBar(string title, string message, muxc.InfoBarSeverity severity)
         {
             if (Window.Current == null)
@@ -210,7 +219,7 @@ namespace Hook
             var rootGrid = Window.Current.Content as Grid;
             if (rootGrid == null)
             {
-                InfoStack.Add(new InfoPiece(title, message, severity));
+                StackMessage(new InfoPiece(title, message, severity));
             }
             var infoBar = rootGrid.FindName("mainInfoBar") as muxc.InfoBar;
 
@@ -244,7 +253,7 @@ namespace Hook
             {
                 // if a message is being shown
                 // drag it to the stack as next
-                InfoStack.Add(new InfoPiece(infoBar.Title, infoBar.Message, infoBar.Severity));
+                StackMessage(new InfoPiece(infoBar.Title, infoBar.Message, infoBar.Severity));
             }
             if (title == null)
             {

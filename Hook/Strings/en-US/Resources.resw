@@ -118,147 +118,141 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AddButtonText.Text" xml:space="preserve">
-    <value>打开新文件</value>
+    <value>Open</value>
   </data>
   <data name="AppLanguageCombo.Header" xml:space="preserve">
-    <value>应用语言</value>
+    <value>App Language</value>
   </data>
   <data name="AppLanguageCombo.PlaceholderText" xml:space="preserve">
-    <value>跟随系统</value>
+    <value>Follow System</value>
   </data>
   <data name="BuiltinConverter.Name" xml:space="preserve">
-    <value>内建转换器</value>
+    <value>Built-in converter</value>
   </data>
   <data name="CancelButton.Text" xml:space="preserve">
-    <value>取消</value>
+    <value>Cancel</value>
   </data>
   <data name="ClearButton.Text" xml:space="preserve">
-    <value>清空列表</value>
+    <value>Clear the list</value>
   </data>
   <data name="CloseButton.Text" xml:space="preserve">
-    <value>关闭</value>
+    <value>Close</value>
   </data>
   <data name="ConverterHeader.Text" xml:space="preserve">
-    <value>转换器</value>
+    <value>Converter</value>
   </data>
   <data name="ConverterNotFound.Content" xml:space="preserve">
-    <value>所选转换器（ID: %s）已丢失。将切换为默认。</value>
+    <value>Selected converter whose id is %s was not found. Switching to default</value>
   </data>
   <data name="ConverterNotFound.Title" xml:space="preserve">
-    <value>转换器未找到</value>
+    <value>No Such Converter</value>
   </data>
   <data name="ConvertHeader.Text" xml:space="preserve">
-    <value>正在将文档转换为网页</value>
+    <value>Converting to Web Page</value>
   </data>
   <data name="DeveloperModeToggle.OffContent" xml:space="preserve">
-    <value>开发者模式已禁用</value>
+    <value>DeveloperMode Disabled</value>
   </data>
   <data name="DeveloperModeToggle.OnContent" xml:space="preserve">
-    <value>开发者模式已启用</value>
+    <value>DeveloperMode Enabled</value>
   </data>
   <data name="DropInstallBody.Text" xml:space="preserve">
-    <value>支持.hplugin文件，安装后将在文档或Hook中实现插件的功能</value>
+    <value>.hplugin files are supported, which provide plugin's functions</value>
   </data>
   <data name="DropInstallHeader.Text" xml:space="preserve">
-    <value>拖放以安装</value>
+    <value>Drop to Install</value>
   </data>
   <data name="ErrorOpen.Title" xml:space="preserve">
-    <value>打开文件时出现错误</value>
+    <value>Error While Opening the File</value>
   </data>
   <data name="Exception.Manifest" xml:space="preserve">
-    <value>无效插件：缺少签名文件</value>
+    <value>Invalidate Plug-In: Manifest not found</value>
   </data>
   <data name="GeneralHeader.Text" xml:space="preserve">
-    <value>通用</value>
+    <value>General</value>
   </data>
   <data name="Home.Header" xml:space="preserve">
-    <value>主页</value>
+    <value>Home</value>
   </data>
   <data name="HomeHeader.Text" xml:space="preserve">
-    <value>您希望做什么？</value>
+    <value>What do you want to do?</value>
   </data>
   <data name="ManageHeader.Text" xml:space="preserve">
-    <value>调整设置</value>
+    <value>Tune Your Preferences</value>
   </data>
   <data name="NotSupported.Content" xml:space="preserve">
-    <value>无法打开不受支持的%s文件</value>
+    <value>Opening unsupported %s file</value>
   </data>
   <data name="NotSupported.Title" xml:space="preserve">
-    <value>不支持的文件格式</value>
+    <value>Unsupported File Format</value>
   </data>
   <data name="PlugInFailure.Title" xml:space="preserve">
-    <value>无法初始化插件%s</value>
+    <value>Unable to Initialized Plug-In %s</value>
   </data>
   <data name="PlugInHeader.Text" xml:space="preserve">
-    <value>管理插件</value>
+    <value>Manage Plug-Ins</value>
   </data>
   <data name="PlugInInstallationFailure.Content" xml:space="preserve">
-    <value>安装程序报告了%e%错误：%m</value>
+    <value>The installation program reported a %e% excpetion: %s</value>
   </data>
   <data name="PlugInInstallationFailure.Title" xml:space="preserve">
-    <value>无法安装此插件</value>
+    <value>Unable to Install the Plug-In</value>
   </data>
   <data name="PlugInLoadDependNotFound.Message" xml:space="preserve">
-    <value>插件%s%依赖于%d%，然而后者并未被加载，因而前者不会被加载</value>
+    <value>Plug-In %s% depends on %d%, which is not loaded. Thus, this plugin is not to be loaded</value>
   </data>
   <data name="PlugInLoadDependNotFound.Title" xml:space="preserve">
-    <value>无法找到依赖项</value>
+    <value>Dependency Not Found</value>
   </data>
   <data name="PlugInLoadHeader.Text" xml:space="preserve">
-    <value>正在加载插件</value>
+    <value>Loading Plug-Ins</value>
   </data>
   <data name="PlugInsUIHeader.Text" xml:space="preserve">
-    <value>插件</value>
+    <value>Plug-In</value>
   </data>
   <data name="RecentHeader.Text" xml:space="preserve">
-    <value>最近打开</value>
+    <value>Recent Opened</value>
   </data>
   <data name="ReloadToApply.Message" xml:space="preserve">
-    <value>您的刚刚修改的设置需要重新启动才会被完全应用到本程序</value>
+    <value>The settings you've changed just now require you to reload the app to be fully applied</value>
   </data>
   <data name="ReloadToApply.Title" xml:space="preserve">
-    <value>重启以应用更改</value>
+    <value>Reload to Apply</value>
   </data>
   <data name="RemoveButton.Text" xml:space="preserve">
-    <value>清除此项</value>
+    <value>Remove this item</value>
   </data>
   <data name="ReplaceButton.Text" xml:space="preserve">
-    <value>替换</value>
+    <value>Replace</value>
   </data>
   <data name="ReplacePlugin.Content" xml:space="preserve">
-    <value>已安装名为%name%的插件，是否替换？
-已安装的插件：
-  作者：%old_author%
-  版本：%old_version%
-将要安装的插件：
-  作者：%new_author%
-  版本：%new_version%</value>
+    <value>Plug-In named %name% has already been installed. Replace it?</value>
   </data>
   <data name="ReplacePlugin.Title" xml:space="preserve">
-    <value>替换插件</value>
+    <value>Plug-In Exists</value>
   </data>
   <data name="SettingsHeader.Text" xml:space="preserve">
-    <value>设置</value>
+    <value>Settings</value>
   </data>
   <data name="ShortcutHeader.Pattern" xml:space="preserve">
-    <value>%s提供的快捷方式</value>
+    <value>Shortcuts Provided by %s</value>
   </data>
   <data name="StartupDeny.Message" xml:space="preserve">
-    <value>要使用插件的全部功能，请在任务管理器或系统设置中启用自动启动</value>
+    <value>To enable full functionality of the plugin, allow the app to start with system in Windows Settings or Task Manager</value>
   </data>
   <data name="StartupDeny.Title" xml:space="preserve">
-    <value>自动启动请求受拒绝</value>
+    <value>Startup Permission Denied</value>
   </data>
   <data name="Uninstallation.Content" xml:space="preserve">
-    <value>相关数据将被清空且无法恢复。是否继续？</value>
+    <value>All the data will be deleted and can not be restored. Continue?</value>
   </data>
   <data name="Uninstallation.Title" xml:space="preserve">
-    <value>将卸载此插件</value>
+    <value>Shall Uninstall the Plug-In</value>
   </data>
   <data name="UninstallButton.Text" xml:space="preserve">
-    <value>卸载</value>
+    <value>Uninstall</value>
   </data>
   <data name="UnknownHeader.Text" xml:space="preserve">
-    <value>未知</value>
+    <value>Unknown</value>
   </data>
 </root>

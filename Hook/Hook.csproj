@@ -19,7 +19,7 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <PackageCertificateThumbprint>FACE5EE0886FE57323DAAF80942582F6DFFD3886</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>409CA1C485387383FC5DD3646903780462E9F6DD</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>True</GenerateTestArtifacts>
@@ -305,6 +305,9 @@
       <Project>{0b5afb58-7ef4-46db-b79f-7ef0b6043c9f}</Project>
       <Name>API</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Hook_TemporaryKey.pfx" />
