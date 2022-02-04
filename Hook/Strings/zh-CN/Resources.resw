@@ -120,11 +120,14 @@
   <data name="AddButtonText.Text" xml:space="preserve">
     <value>打开新文件</value>
   </data>
-  <data name="AppLanguageCombo.Header" xml:space="preserve">
-    <value>应用语言</value>
-  </data>
   <data name="AppLanguageCombo.PlaceholderText" xml:space="preserve">
     <value>跟随系统</value>
+  </data>
+  <data name="AppLanguageHeader.Text" xml:space="preserve">
+    <value>应用语言</value>
+  </data>
+  <data name="AppLanguageText.Text" xml:space="preserve">
+    <value>应用显示的语言</value>
   </data>
   <data name="BuiltinConverter.Name" xml:space="preserve">
     <value>内建转换器</value>

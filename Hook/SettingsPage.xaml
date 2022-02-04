@@ -13,18 +13,31 @@
         <StackPanel Padding="24" Spacing="10" Orientation="Vertical">
             <TextBlock x:Uid="SettingsHeader" Text="Settings" Style="{ThemeResource HeaderTextBlockStyle}"/>
             <TextBlock x:Uid="GeneralHeader" Text="General" Style="{ThemeResource BaseTextBlockStyle}"/>
-            <StackPanel Orientation="Horizontal" Padding="10" 
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        CornerRadius="8"
-                        BorderThickness="1"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
-                <SymbolIcon Symbol="Character" Margin="0,0,10,0"/>
-                <ComboBox Header="App Language" x:Uid="AppLanguageCombo" PlaceholderText="Follow System"
+            <Grid Padding="16"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <SymbolIcon Symbol="Character" Margin="5,0,20,0" Grid.RowSpan="3"/>
+                <TextBlock x:Uid="AppLanguageHeader" Text="App Language" Style="{ThemeResource BaseTextBlockStyle}" Grid.Column="1"/>
+                <TextBlock x:Uid="AppLanguageText" Text="The language the app displays" Grid.Column="1" Grid.Row="1"/>
+                <ComboBox x:Uid="AppLanguageCombo" PlaceholderText="Follow System"
+                          Grid.RowSpan="3" Grid.Column="2"
+                          HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="200"
                           SelectionChanged="AppLanguageCombo_SelectionChanged"
                           Loaded="AppLanguageCombo_Loaded"
                           ItemsSource="{x:Bind local:Utility.LanguageCodes}">
                 </ComboBox>
-            </StackPanel>
+            </Grid>
 
             <TextBlock x:Uid="ConverterHeader" Text="Converters" Style="{ThemeResource BaseTextBlockStyle}"/>
             <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False" HorizontalAlignment="Stretch">

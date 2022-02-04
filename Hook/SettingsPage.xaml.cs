@@ -40,10 +40,10 @@ namespace Hook
         private void AppLanguageCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var code = (e.AddedItems[0] as Language).Code;
+            Utility.SetAppLanguage(code);
             if (code != ActuallLanguageCode)
             {
                 Utility.LanguageOverride = code;
-                Utility.SetAppLanguage(code);
 
                 App.ShowInfoBar(
                     Utility.GetResourceString("ReloadToApply/Title"),
