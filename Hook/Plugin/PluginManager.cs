@@ -81,7 +81,7 @@ namespace Hook.Plugin
             {
                 if (plugin is JSPlugin)
                 {
-                    foreach (var name in (plugin as JSPlugin).Dependencies)
+                    foreach (var name in (plugin as JSPlugin)._depend)
                     {
                         notLoaded += name + ", ";
                     }

@@ -20,6 +20,7 @@ namespace Hook.Plugin
         private readonly Jint.Native.Object.ObjectInstance Json;
         public JSSettings(JSPlugin parent)
         {
+            bool created = false;
             using (var task = parent.Root.TryGetItemAsync(SettingsFileName).AsTask())
             {
                 task.Wait();
@@ -31,15 +32,23 @@ namespace Hook.Plugin
                         creation.Wait();
                         container = creation.Result;
                     }
+                    created = true;
                 }
 
                 Container = container as StorageFile;
             }
 
-            using (var read = FileIO.ReadTextAsync(Container).AsTask())
+            if (!created)
             {
-                read.Wait();
-                Json = new JsonParser(parent.Engine).Parse(read.Result).AsObject();
+                using (var read = FileIO.ReadTextAsync(Container).AsTask())
+                {
+                    read.Wait();
+                    Json = new JsonParser(parent.Engine).Parse(read.Result).AsObject();
+                }
+            }
+            else
+            {
+                Json = new Jint.Native.Object.ObjectInstance(parent.Engine);
             }
             Plugin = parent;
 

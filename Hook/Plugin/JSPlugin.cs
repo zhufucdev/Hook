@@ -12,8 +12,8 @@ namespace Hook.Plugin
     internal class JSPlugin : IPlugin
     {
         private readonly string _name, _des, _author, _version;
-        public readonly string[] Embedded;
-        private readonly string[] _require = new string[0], _depend = new string[0];
+        public readonly string[] Embedded, _depend = new string[0];
+        private readonly string[] _require = new string[0];
 
         public readonly Engine Engine = new Engine();
         public readonly StorageFolder Root;
