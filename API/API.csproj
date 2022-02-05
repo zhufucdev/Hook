@@ -124,6 +124,7 @@
     <Compile Include="IDocument.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsItem.cs" />
     <EmbeddedResource Include="Properties\API.rd.xml" />
   </ItemGroup>
   <ItemGroup>

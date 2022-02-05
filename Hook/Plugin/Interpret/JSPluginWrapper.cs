@@ -1,15 +1,10 @@
 ﻿using Jint;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Hook.Plugin
+namespace Hook.Plugin.Interpret
 {
     internal class JSPluginWrapper
     {
-        private JSPlugin parent;
+        private readonly JSPlugin parent;
         public JSPluginWrapper(JSPlugin parent)
         {
             this.parent = parent;
@@ -28,10 +23,12 @@ namespace Hook.Plugin
             {
                 finalPathfinding = icon;
             }
-            var shortcut = parent.CreateShortcut(name, description, finalIcon, finalPathfinding);
+            var shortcut = parent.FunctionsContainer.CreateShortcut(name, description, finalIcon, finalPathfinding);
             _ = MainPage.Instance.Dispatcher
                 .RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => parent.Shortcuts.Add(shortcut));
         }
+
+        public JSSettings.Wrapper settings => parent.SettingsContainer.GetWrapper();
 #pragma warning restore IDE1006 // 命名样式
     }
 }

@@ -16,11 +16,13 @@ namespace Hook.API
         public abstract IPlugin[] Dependencies { get; }
         public abstract string[] Requirements { get; }
         public ObservableCollection<IDocument> Shortcuts = new ObservableCollection<IDocument>();
+        public ObservableCollection<ISettingsItem> Settings = new ObservableCollection<ISettingsItem>();
 
         public bool Loaded { protected set; get; }
 
         public abstract Task OnLoad();
         public abstract Task OnUnload();
+        public abstract Task Uninstall();
 
         public const string REQUIRE_STARTUP = "startWithSystem";
     }

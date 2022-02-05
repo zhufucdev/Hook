@@ -17,10 +17,7 @@ namespace Hook
     {
         public override string Name => System.IO.Path.GetFileName(Path);
         public string Path { get; private set; }
-        public static StorageFolder Cache
-        {
-            get => ApplicationData.Current.LocalCacheFolder;
-        }
+        public static StorageFolder Cache => ApplicationData.Current.LocalCacheFolder;
         public virtual byte[] SHA
         {
             protected set;
@@ -156,9 +153,7 @@ namespace Hook
         }
 
         public static ObservableCollection<DocumentInfo> RecentDocs = new ObservableCollection<DocumentInfo>();
-        public static StorageFolder SaveFolder {
-            get => ApplicationData.Current.LocalFolder;
-        }
+        public static StorageFolder SaveFolder => ApplicationData.Current.LocalFolder;
 
         public static async void LoadFromDisk()
         {
@@ -177,9 +172,9 @@ namespace Hook
 
                     var tmp = obj["SHA"];
                     byte[] SHA = null;
-                    if (tmp != null && tmp is byte[])
+                    if (tmp != null && tmp.Type == JTokenType.String)
                     {
-                        SHA = (byte[])tmp;
+                        SHA = Convert.FromBase64String((string)tmp);
                     }
                     var instance = new DocumentInfo((string)obj["Path"], (DateTime)obj["LastTouched"], SHA, (Guid)obj["CacheMethod"]);
                     list.Add(instance);
@@ -232,7 +227,6 @@ namespace Hook
                 if (file != null && file is StorageFile)
                 {
                     await file.DeleteAsync();
-                    
                 }
             }
             Removed.Clear();
@@ -251,11 +245,13 @@ namespace Hook
         }
         private static async void Sync(DocumentInfo doc)
         {
-            var obj = new JObject();
-            obj.Add("Path", doc.Path);
-            obj.Add("LastTouched", doc.LastTouched);
-            obj.Add("SHA", doc.SHA);
-            obj.Add("CacheMethod", doc.CacheMethod);
+            var obj = new JObject
+            {
+                { "Path", doc.Path },
+                { "LastTouched", doc.LastTouched },
+                { "SHA", doc.SHA == null ? null : Convert.ToBase64String(doc.SHA) },
+                { "CacheMethod", doc.CacheMethod }
+            };
 
             var name = GetDesignedCacheName(doc) + ".json";
             var file = await SaveFolder.TryGetItemAsync(name);

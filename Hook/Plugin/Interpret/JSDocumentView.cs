@@ -59,9 +59,11 @@ namespace Hook.Plugin
 
             public string runScript(string script)
             {
-                var task = parent.RunScript(script);
-                task.Wait();
-                return task.Result;
+                using (var task = parent.RunScript(script))
+                {
+                    task.Wait();
+                    return task.Result;
+                }
             }
 
             public void runEmbedded(string name, string functionName = null, string arguments = null)

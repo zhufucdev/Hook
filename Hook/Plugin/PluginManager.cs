@@ -81,7 +81,7 @@ namespace Hook.Plugin
             {
                 if (plugin is JSPlugin)
                 {
-                    foreach (var name in (plugin as JSPlugin)._depend)
+                    foreach (var name in (plugin as JSPlugin).Dependencies)
                     {
                         notLoaded += name + ", ";
                     }
@@ -106,14 +106,19 @@ namespace Hook.Plugin
             }
             catch (Exception ex)
             {
-                await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                    App.ShowInfoBar(
-                        Utility.GetResourceString("PlugInFailure/Title").Replace("%s", plugin.Name),
-                        string.Format("{0}: {1}", ex.GetType().Name, ex.Message),
-                        Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error
-                    )
-                );
+                _ = ReportPluginFailure(ex, plugin);
             }
+        }
+
+        public static async Task ReportPluginFailure(Exception ex, IPlugin plugin)
+        {
+            await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                App.ShowInfoBar(
+                    Utility.GetResourceString("PlugInFailure/Title").Replace("%s", plugin.Name),
+                    string.Format("{0}: {1}", ex.GetType().Name, ex.Message),
+                    Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error
+                )
+            );
         }
 
         public static async Task Initialize()
@@ -342,18 +347,10 @@ namespace Hook.Plugin
 
         public static async Task Uninstall(IPlugin plugin)
         {
-            if (plugin is JSPlugin)
-            {
-                await plugin.OnUnload();
-                Plugins.Remove(plugin);
+            await plugin.OnUnload();
+            Plugins.Remove(plugin);
 
-                var folder = await Installation.GetFolderAsync(plugin.Name);
-                await folder.DeleteAsync();
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            await plugin.Uninstall();
         }
 
         public static void UnloadAll()
@@ -362,7 +359,10 @@ namespace Hook.Plugin
             {
                 try
                 {
-                    plugin.OnUnload().Wait();
+                    using (var unloadTask = plugin.OnUnload())
+                    {
+                        unloadTask.Wait();
+                    }
                 }
                 catch
                 {

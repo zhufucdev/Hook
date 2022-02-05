@@ -41,20 +41,20 @@ API is a way to communicate with Hook, which can be accessed in the main.js scri
 
 **Note:** The Hook API hasn't been fully constructed yet. Changes expected.
 
-Head to [The Hook API](The_Hook_API.md) for detailed documentation.
+Head to [The Hook API](The_Hook_API.md) for detailed documentation
 
 ## Step3: Debugging
 Refering to the api, you should finish your first attempt and load the testing plugin
 to the app. To do this, not hurry to pack. Instead, enable the DeveloperMode and
-the plugin will be allowed to load directly from the folder.
+the plugin will be allowed to load directly from the folder
 
 ![Enabling DeveloperMode](Images/EnableDeveloperMode.png)
 
-If you do not see expected behavior, you can change any code and save the file.
-Modifications will be applied to the plugin dynamically.
+If you do not see expected behavior, you can change any code and save the file
+Modifications will be applied to the plugin dynamically
 
 ## Step4: Packaging
 After debug is completed, you can either turn off DeveloperMode, or uninstall the
 debugged plugin. Then, simply compress the whole folder containing the plugin code
 as a zip file, and install it to Hook. After a brief test, you should get the same behavior
-as expected.
+as expected

@@ -90,7 +90,10 @@ namespace Hook
                     ShowInfoBar(null, null, muxc.InfoBarSeverity.Informational);
                 }
             }
-            LoadSettings(e).Wait();
+            using (var settingsTask = LoadSettings(e))
+            {
+                settingsTask.Wait();
+            }
         }
 
         private bool SettingsLoaded = false;

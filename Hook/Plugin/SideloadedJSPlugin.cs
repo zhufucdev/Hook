@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Search;
@@ -22,13 +23,20 @@ namespace Hook.Plugin
         private DateTime lastReload = DateTime.Now;
         private async void Query_ContentsChangedAsync(IStorageQueryResultBase sender, object args)
         {
-            if (DateTime.Now - lastReload > TimeSpan.FromSeconds(1))
+            if (DateTime.Now - lastReload > TimeSpan.FromSeconds(2))
             {
                 await query.GetFilesAsync();
                 await OnUnload();
                 await PluginManager.Load(this);
                 lastReload = DateTime.Now;
             }
+        }
+
+        public override async Task Uninstall()
+        {
+            var list = Utility.Sideloaders.ToList();
+            list.Remove(Root.Path);
+            Utility.Sideloaders = list.ToArray();
         }
     }
 }
