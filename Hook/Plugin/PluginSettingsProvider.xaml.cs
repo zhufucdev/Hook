@@ -30,9 +30,35 @@ namespace Hook.Plugin
             get => _plugin;
             set
             {
+                if (_plugin != null)
+                {
+                    _plugin.Settings.CollectionChanged -= Settings_CollectionChanged;
+                }
                 _plugin = value;
                 List.ItemsSource = value.Settings;
+                value.Settings.CollectionChanged += Settings_CollectionChanged;
+                UpdateUI();
             }
+        }
+
+        private void Settings_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            UpdateUI();
+        }
+
+        private void UpdateUI()
+        {
+            _ = MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                if (Plugin.Settings.Count > 0)
+                {
+                    Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    Visibility = Visibility.Collapsed;
+                }
+            });
         }
 
         public static UIElement GetControl(ISettingsItem settingsItem)

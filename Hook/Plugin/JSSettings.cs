@@ -21,6 +21,7 @@ namespace Hook.Plugin
         public JSSettings(JSPlugin parent)
         {
             bool created = false;
+            Plugin = parent;
             using (var task = parent.Root.TryGetItemAsync(SettingsFileName).AsTask())
             {
                 task.Wait();
@@ -49,8 +50,8 @@ namespace Hook.Plugin
             else
             {
                 Json = new Jint.Native.Object.ObjectInstance(parent.Engine);
+                _ = Save();
             }
-            Plugin = parent;
 
             parent.Unloaded += Parent_Unloaded;
         }

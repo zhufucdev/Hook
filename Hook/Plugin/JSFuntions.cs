@@ -246,26 +246,27 @@ namespace Hook.Plugin
                 }
                 return await request.Content.ReadAsStringAsync();
             };
-            object result = null;
-            try
+            Task.Run(async () =>
             {
-                var task = download();
-                task.Wait();
-                result = task.Result;
-            }
-            catch (HttpRequestException ex)
-            {
-                var index = ex.Message.IndexOf("HTTP: ");
-                if (index != -1)
+                object result = null;
+                try
                 {
-                    result = int.Parse(ex.Message.Substring(6));
+                    result = await download();
                 }
-            }
-            finally
-            {
-                activeClients.Remove(client);
-                callback.AsCallable().Invoke(Engine, result);
-            }
+                catch (HttpRequestException ex)
+                {
+                    var index = ex.Message.IndexOf("HTTP: ");
+                    if (index != -1)
+                    {
+                        result = int.Parse(ex.Message.Substring(6));
+                    }
+                }
+                finally
+                {
+                    activeClients.Remove(client);
+                    callback.AsCallable().Invoke(Engine, result);
+                }
+            });
         }
 
         private void J_openDocument(string path)
