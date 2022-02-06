@@ -188,7 +188,7 @@ namespace Hook
 
         private void App_Resuming(object sender, object e)
         {
-            
+            //currently nothing
         }
 
         protected override void OnFileActivated(FileActivatedEventArgs args)
@@ -204,13 +204,18 @@ namespace Hook
             }
         }
 
-        private static List<InfoPiece> InfoStack = new List<InfoPiece>();
-        private static void StackMessage(InfoPiece info)
+        private static readonly Stack<InfoPiece> InfoStack = new Stack<InfoPiece>();
+        private static void StackMessage(InfoPiece info, muxc.InfoBar bar = null)
         {
+            if (bar != null && info.Message == bar.Message)
+            {
+                return;
+            }
+
             if (!InfoStack.Any(i => i.Message == info.Message))
             {
                 // stack different message only
-                InfoStack.Add(info);
+                InfoStack.Push(info);
             }
         }
         public static void ShowInfoBar(string title, string message, muxc.InfoBarSeverity severity)
@@ -228,8 +233,7 @@ namespace Hook
 
             void takeLast()
             {
-                var info = InfoStack.Last();
-                InfoStack.RemoveAt(InfoStack.Count - 1);
+                var info = InfoStack.Pop();
                 ShowInfoBar(info.Title, info.Message, info.Severity);
             }
             if (infoBar == null)
@@ -256,7 +260,7 @@ namespace Hook
             {
                 // if a message is being shown
                 // drag it to the stack as next
-                StackMessage(new InfoPiece(infoBar.Title, infoBar.Message, infoBar.Severity));
+                StackMessage(new InfoPiece(infoBar.Title, infoBar.Message, infoBar.Severity), infoBar);
             }
             if (title == null)
             {
