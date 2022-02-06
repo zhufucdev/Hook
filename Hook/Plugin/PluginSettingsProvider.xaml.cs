@@ -73,7 +73,7 @@ namespace Hook.Plugin
             {
                 var textBox = new TextBox()
                 {
-                    Text = settingsItem.Value as string
+                    Text = (settingsItem.Value as string) ?? string.Empty
                 };
                 settingsItem.ValueChanged += (sender, e) =>
                 {
@@ -97,12 +97,11 @@ namespace Hook.Plugin
                     valueRange = js.ValueRange;
                 }
                 var step = valueType == typeof(double) ? Range.Step : 1;
-
                 var slider = new Slider()
                 {
-                    Value = (double)settingsItem.Value,
-                    Minimum = (double)valueRange.Start + (valueRange.IncludeStart ? 0 : step),
-                    Maximum = (double)valueRange.End - (valueRange.IncludeEnd ? 0 : step),
+                    Value = (double)(settingsItem.Value ?? decimal.ToDouble(valueRange.End)),
+                    Minimum = decimal.ToDouble(valueRange.Start) + (valueRange.IncludeStart ? 0 : step),
+                    Maximum = decimal.ToDouble(valueRange.End) - (valueRange.IncludeEnd ? 0 : step),
                     StepFrequency = step
                 };
 
@@ -124,7 +123,7 @@ namespace Hook.Plugin
             {
                 var toggle = new ToggleSwitch()
                 {
-                    IsOn = (bool)settingsItem.Value
+                    IsOn = (bool)(settingsItem.Value ?? false)
                 };
                 toggle.Toggled += (sender, e) =>
                 {
