@@ -185,6 +185,7 @@
       <DependentUpon>SettingsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility.cs" />
+    <Compile Include="WordInteropConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -192,6 +193,8 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\ExternalConverters\WordInteropConverter.exe" />
+    <Content Include="Assets\ExternalConverters\WordInteropConverter.pdb" />
     <Content Include="Assets\HookedWordDocLogo.png" />
     <Content Include="Assets\HookedWordDocLogo.svg" />
     <Content Include="Assets\LargeTile.scale-100.png" />
@@ -321,8 +324,16 @@
     <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\ExternalConverters\Windows.winmd" />
+    <None Include="Assets\ExternalConverters\WordInteropConverter.exe.config" />
     <None Include="Hook_TemporaryKey.pfx" />
   </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsDesktop, Version=10.0.19041.0">
+      <Name>Windows Desktop Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -55,7 +55,8 @@
                 </muxc:ItemsRepeater>
 
                 <TextBlock x:Uid="ConverterHeader" Text="Converters" Style="{ThemeResource BaseTextBlockStyle}"/>
-                <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False" HorizontalAlignment="Stretch">
+                <ListView x:Name="ConverterList" SelectionMode="Single" IsItemClickEnabled="False" HorizontalAlignment="Stretch"
+                          SelectionChanged="ConverterList_SelectionChanged" ItemsSource="{x:Bind local:Utility.AvailableConverters}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:DocumentConvert">
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="0,10,0,10">

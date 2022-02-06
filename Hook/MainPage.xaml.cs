@@ -78,14 +78,14 @@ namespace Hook
             {
                 // remove the given item by args
                 TabView.TabItems.Remove(item);
-                if (item is muxc.TabViewItem)
+                if (item is muxc.TabViewItem viewItem)
                 {
-                    var cast = item as muxc.TabViewItem;
-                    var page = (cast.Content as Frame).Content;
-                    if (page is ContentPage)
+                    var page = (viewItem.Content as Frame).Content;
+                    if (page is ContentPage content)
                     {
-                        (page as ContentPage).Close();
+                        content.Close();
                     }
+                    GC.Collect();
                 }
             }
         }

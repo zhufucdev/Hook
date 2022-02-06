@@ -145,7 +145,7 @@
     <value>Converter</value>
   </data>
   <data name="ConverterNotFound.Content" xml:space="preserve">
-    <value>Selected converter whose id is %s was not found. Switching to default</value>
+    <value>Selected converter was not found. Switching to default</value>
   </data>
   <data name="ConverterNotFound.Title" xml:space="preserve">
     <value>No Such Converter</value>
@@ -257,5 +257,8 @@
   </data>
   <data name="UnknownHeader.Text" xml:space="preserve">
     <value>Unknown</value>
+  </data>
+  <data name="WordInteropConverter.Name" xml:space="preserve">
+    <value>Word External Converter</value>
   </data>
 </root>

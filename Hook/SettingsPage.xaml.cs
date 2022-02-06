@@ -26,7 +26,6 @@ namespace Hook
         {
             this.InitializeComponent();
 
-            ConverterList.ItemsSource = Utility.AvailableConverters;
             LoadSettings();
         }
 
@@ -63,6 +62,15 @@ namespace Hook
                     combo.SelectedIndex = i;
                     break;
                 }
+            }
+        }
+
+        private void ConverterList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = e.AddedItems[0] as DocumentConvert;
+            if (selected != null)
+            {
+                Utility.DefaultConverter = selected;
             }
         }
     }

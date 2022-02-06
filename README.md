@@ -7,7 +7,7 @@ Hook is a read-only MS Word implemented in [WebView2](https://docs.microsoft.com
 - [x] Docx to HTML Converter
 - [x] Modern Look and Multilanguage Support
 - [x] Plugin System using JavaScript for Automation and UI Extension
-- [ ] External Converter Support
+- [x] External Converter Support
 ## Supported Languages
 - [x] 简体中文
 - [x] English (US)
@@ -20,7 +20,7 @@ Dependencies:
 - Micosoft.UI.Xaml
 - OpenXMLPowerTools
 - Newtonsoft.Json
+- \<Path to Windows SDK>\10\UnionMetadata\\\<Your version>\Windows.winmd
 
-which should be installed automatically.
 # Creating a Plugin
 For documentation and guideline, head to [Plugin Creation](How_To_Create_Plugin.md).

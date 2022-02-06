@@ -106,30 +106,26 @@ namespace Hook
 
             #region Converters
             var builtin = new DefaultDocumentConvert();
-            var settings = Utility.RoamingSettings;
+            var wordInterpo = new WordInteropConverter();
             Utility.AvailableConverters.Add(builtin);
+            Utility.AvailableConverters.Add(wordInterpo);
 
             // setup default converter
-            if (settings.Values.ContainsKey(Utility.KEY_DEFAULT_CONVERTER))
+            var defaultConverter = Utility.GetSettings<string>(Utility.KEY_DEFAULT_CONVERTER);
+            var isConverterSet = !string.IsNullOrEmpty(defaultConverter);
+            if (isConverterSet && !Utility.AvailableConverters.Any(c => c.ID.ToString() == defaultConverter))
             {
-                Utility.DefaultConverter =
-                    Utility.AvailableConverters.FirstOrDefault
-                    (converter => converter.ID.ToString() == settings.Values[Utility.KEY_DEFAULT_CONVERTER].ToString());
-                if (Utility.DefaultConverter == null)
+                _ = new ContentDialog()
                 {
-                    await new ContentDialog()
-                    {
-                        Title = Utility.GetResourceString("ConverterNotFound/Title"),
-                        Content = Utility.GetResourceString("ConverterNotFound/Content"),
-                        CloseButtonText = Utility.GetResourceString("CloseButton/Text")
-                    }.ShowAsync();
-                    Utility.DefaultConverter = builtin;
-                }
+                    Title = Utility.GetResourceString("ConverterNotFound/Title"),
+                    Content = Utility.GetResourceString("ConverterNotFound/Content"),
+                    CloseButtonText = Utility.GetResourceString("CloseButton/Text")
+                }.ShowAsync();
+                Utility.DefaultConverter = builtin;
             }
-            else
+            else if (!isConverterSet)
             {
                 Utility.DefaultConverter = builtin;
-                settings.Values[Utility.KEY_DEFAULT_CONVERTER] = builtin.ID.ToString();
             }
             #endregion
             DocumentInfo.LoadFromDisk();

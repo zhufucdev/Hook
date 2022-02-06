@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.ApplicationModel.Resources;
 using Windows.Globalization;
 using Windows.Storage;
@@ -72,7 +73,18 @@ namespace Hook
             return result;
         }
 
-        public static DocumentConvert DefaultConverter;
+        public static DocumentConvert DefaultConverter
+        {
+            get {
+                var id = GetSettings<string>(KEY_DEFAULT_CONVERTER);
+                if (string.IsNullOrEmpty(id))
+                {
+                    return null;
+                }
+                return AvailableConverters.FirstOrDefault(converter => converter.ID.ToString() == id);
+            }
+            set => ModifySettings(KEY_DEFAULT_CONVERTER, value.ID.ToString());
+        }
         public static ObservableCollection<DocumentConvert> AvailableConverters = new ObservableCollection<DocumentConvert>();
 
         public static ApplicationDataStorageHelper DataStorageHelper = new ApplicationDataStorageHelper(ApplicationData.Current, new JsonObjectSerializer());

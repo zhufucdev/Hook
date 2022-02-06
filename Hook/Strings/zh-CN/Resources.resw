@@ -145,7 +145,7 @@
     <value>转换器</value>
   </data>
   <data name="ConverterNotFound.Content" xml:space="preserve">
-    <value>所选转换器（ID: %s）已丢失。将切换为默认。</value>
+    <value>所选转换器已丢失。将切换为默认。</value>
   </data>
   <data name="ConverterNotFound.Title" xml:space="preserve">
     <value>转换器未找到</value>
@@ -263,5 +263,8 @@
   </data>
   <data name="UnknownHeader.Text" xml:space="preserve">
     <value>未知</value>
+  </data>
+  <data name="WordInteropConverter.Name" xml:space="preserve">
+    <value>Word外部转换器</value>
   </data>
 </root>
