@@ -2,6 +2,7 @@
 ## Step1: Project Structure
 - ../MyPlugin.hplugin
   - plugin.json
+  - settings.json
   - main.js
   - logo.png
   - callable.js(register in plugin.json to take effect)
@@ -20,7 +21,39 @@ Example be like:
     "version": "0.8 alpha",
     "author": "Sample Author",
     "embed": ["callable.js"],
-    "require": ["startWithSystem"]
+    "require": ["startWithSystem"],
+    "settings": {
+        "greeting": {
+            "title": "Greeting",
+            "description": "A simple greeting word",
+            "type": "string",
+            "icon": "character"
+        },
+        "pi": {
+            "title": "¦Ð",
+            "description": "The Archimedes's constant, now changeable",
+            "type": "double",
+            "range": "(3.13, 3.15)",
+            "icon": "placeholder"
+        },
+        "hooked": {
+            "title": "Hooked",
+            "description": "A simple switch",
+            "type": "bool"
+        }
+    }
+}
+```
+For more info about settings, head to [plugin.settings - The Hook API](The_Hook_API.md#settings-jssettings)
+### settings.json
+Default values of plugin settings
+
+Example be like:
+```json
+{
+    "greeting": "Hi",
+    "pi": 3.14,
+    "hooked": true
 }
 ```
 ### main.js
@@ -56,5 +89,5 @@ Modifications will be applied to the plugin dynamically
 ## Step4: Packaging
 After debug is completed, you can either turn off DeveloperMode, or uninstall the
 debugged plugin. Then, simply compress the whole folder containing the plugin code
-as a zip file, and install it to Hook. After a brief test, you should get the same behavior
+as a zip file, and install it in Hook. After a brief test, you should get the same behavior
 as expected

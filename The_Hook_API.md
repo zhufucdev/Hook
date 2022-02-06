@@ -7,8 +7,8 @@ The API should be a consistent, event-based and full-function coding experience.
 ## functions
 ### addEventListener(eventName, callback)
 *parameters*
-- **Function callback:** triggered when the given event happens
-- **String eventName:** can be one of the followings
+- **callback: function** triggered when the given event happens
+- **eventName: string** can be one of the followings
 
 |Name|Description|Callback Parameter|
 |:---|:----------|:-----------------|
@@ -18,7 +18,7 @@ The API should be a consistent, event-based and full-function coding experience.
 |systemStartup|When the plugin is loaded because of system starting up|nothing|
 
 ### getOpenedDocuments()
-*return:* a read-only array containing each document shown in the tab view
+*return:* a read-only array containing each document shown in the tab view.
 
 *see:* [DocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)
 ### getRecentDocuments()
@@ -96,5 +96,44 @@ This parameter can either be a string constant, a function that returns a string
 returns nothing and invokes its second argument with a string const. All you need to do is to provide the path
 to the file to be opened by this method.
 
-The **progressUpdater** parameter is a function that receives a double as current progress, which ranges from 0 to 100
-as a percentage.
+The **progressUpdater** parameter is a function that receives a double as the indicator of current progress, 
+which ranges from 0 to 100 as percentage.
+
+#### settings: [JSSettings](Hook/Plugin/JSSettings.cs)
+##### get: function(key)
+Get the value of a specific settings item.
+
+*param key: string* The only identity of the settings item.
+
+*return* Value of the desired item.
+##### put: function(key, value)
+Modify the value of a specific settings item.
+
+*param key: string* Identity of the item to be modified.
+
+*param value: string* Value to modify.
+
+**Note:** value you put should be consistent with what is written
+in the plugin manifest.
+
+Your settings should be user-interactive, which is implenented by
+adding external controls in the Settings page. To make that work,
+screen info and data type should be defined.
+So here is the pattern of settings manifest in plugin.json you should follow.
+```json
+{
+	//basic plugin info...
+	"settings": {
+		"<Item Key 1>": {
+			"title": "<Title of the item, displayed like a preference name>",
+			"description": "<Description of the item, working as a detailed explanation of this item>",
+			"icon": "<Symbol by Microsoft>",
+			"type": "int|long|double|string|bool",
+			["range": "\[|(<number>,<number>\]|)"] // available only if it's a numeric type
+		},
+		//maybe more settings items...
+	}
+}
+```
+Your Plugin Settings should look like this:
+![Plugin Settings Example](Images/PluginSettingsExample.png)
