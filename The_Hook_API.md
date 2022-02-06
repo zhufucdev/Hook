@@ -14,6 +14,7 @@ The API should be a consistent, event-based and full-function coding experience.
 |:---|:----------|:-----------------|
 |documentLoaded|When a document is ready to be shown|[JSDocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)|
 |documentClosed|When a document is about to be closed|[JSDocumentView](Hook/Plugin/Interpret/JSDocumentView.cs)|
+|settingsChanged|When a Plugin Settings item has been changed, either by user or by plugin itself|See [Guideline](#handling-dynamic-change-of-settings)|
 |unload|When the plugin is about to be unloaded, usually app shutingdown or user uninstalling the plugin|nothing|
 |systemStartup|When the plugin is loaded because of system starting up|nothing|
 
@@ -116,7 +117,10 @@ Modify the value of a specific settings item.
 **Note:** value you put should be consistent with what is written
 in the plugin manifest.
 
-Your settings should be user-interactive, which is implenented by
+For more info, head to the [Guidline](#guideline-to-plugin-settings).
+
+### Guideline to Plugin Settings
+Your settings logic should be user-interactive, which is implenented by
 adding external controls in the Settings page. To make that work,
 screen info and data type should be defined.
 So here is the pattern of settings manifest in plugin.json you should follow.
@@ -135,5 +139,21 @@ So here is the pattern of settings manifest in plugin.json you should follow.
 	}
 }
 ```
-Your Plugin Settings should look like this:
+The example plugin shown in the [tutorial](How_To_Create_Plugin.md#plugin.json) should look like this:
 ![Plugin Settings Example](Images/PluginSettingsExample.png)
+#### Handling dynamic change of settings
+Because of the uncertainty of the source of changes to settings (the user or the program), it's better
+to **react** to changes, rather than merely save them to a file.
+
+To achieve this, the event system is just the suitable person.
+```javascript
+addEventListener("settingsChanged", s => { // s is a wrapped object from C#
+	if (s.key === 'greeting') {
+		ShowInfoBar("MyPlugin", "Greeting is now " + s.value)
+	}
+})
+```
+
+Additionally, if the settings item can only be applied after the app reloads,
+an InfoBar should be shown to notify the user about it. For example, changes
+that are made to Plugin Shortcut.

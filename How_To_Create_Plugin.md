@@ -44,7 +44,7 @@ Example be like:
     }
 }
 ```
-For more info about settings, head to [plugin.settings - The Hook API](The_Hook_API.md#settings-jssettings)
+For more info about settings, head to [plugin.settings - The Hook API](The_Hook_API.md#guideline-to-plugin-settings)
 ### settings.json
 Default values of plugin settings
 
