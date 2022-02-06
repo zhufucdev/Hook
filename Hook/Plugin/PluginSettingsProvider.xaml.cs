@@ -82,7 +82,7 @@ namespace Hook.Plugin
                         textBox.Text = e as string;
                     }
                 };
-                textBox.TextCompositionEnded += (sender, e) =>
+                textBox.TextChanged += (sender, e) =>
                 {
                     settingsItem.Value = textBox.Text;
                     markInternalChange();
