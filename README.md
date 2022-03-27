@@ -22,5 +22,8 @@ Dependencies:
 - Newtonsoft.Json
 - \<Path to Windows SDK>\10\UnionMetadata\\\<Your version>\Windows.winmd
 
-# Creating a Plugin
+# Create a Plugin
 For documentation and guideline, head to [Plugin Creation](How_To_Create_Plugin.md).
+
+# Download and Contribute Plugins
+I've setup an _official collection of Hook plugins_ [here](https://github.com/zhufucdev/Hook-Plugins). If you have any interest, take a look or upload yours with a pull reqeust.
